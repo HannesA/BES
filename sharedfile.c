@@ -13,7 +13,7 @@
  *
  */
 
-
+#include "sharedfile.h"
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -29,9 +29,7 @@
  
  
  
- static void gotanerror(char *message);
- int do_ringbuffersize(int argc, char const argv[]);
- void do_semaphorinit();
+
  
  
  

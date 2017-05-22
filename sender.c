@@ -55,20 +55,6 @@
  */
 static int docheckinOpen(const char *command, const char *type)
 {
-	if(myPid!=-1){/*Erneuten Aufruf ohne vorherigen pclose Aufruf abfangen*/
-		errno = EAGAIN;
-		return 1;
-	}
-	if(type == NULL || ((type[0] != MODE_READ && type[0] != MODE_WRITE) || type[1] != 0)){	/*Check ob Korrekter Type*/
-		errno = EINVAL;			/*errno auf EINVAL setzen -->  "INVALID ARGUMENT"*/
-		return 1;
-	}	
-		
-	if(command[0] == '\0' || command == NULL){		/*Check ob Command vorhanden*/
-		errno = EINVAL;			/*errno auf EINVAL setzen --> "INVALID ARGUMENT"*/
-		return 1;
-	}
-	return 0;/*Default return Wert*/
 }
 	
 /*

@@ -20,9 +20,6 @@
  */
 
 
-
-#include <errno.h>
-
 /*
  * --------------------------------------------------------------- defines --
  */
@@ -36,7 +33,9 @@
 /*
  * ------------------------------------------------------------- functions --
  */
-	
+
+extern int do_ringbuffersize(int argc, char const argv[]);
+extern void do_semaphorinit();	
 
 	
 /*
