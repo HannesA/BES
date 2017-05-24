@@ -13,7 +13,7 @@
  *
  */
 
-#include "sharedfile.h"
+#include "sharedfile.h" 
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -26,17 +26,27 @@
  static const char *FILENAME; //wird durch empfänger und sender gesetzt
  static int semid[2] = 0; //Semaphoren für Write[0] und Read[1]
  static int key[2] = {getpwuid()*1000,getpwuid()*1000 + 1};	//key für die semaphoren
- 
- 
- 
+ /*
+	Im Header:
+	extern int do_ringbuffersize(int argc, char const argv[]);
+	extern void do_semaphorinit();	
+ */
 
  
- 
- 
- /*Sucht nach Argumenten hinter '-m' und gibt sie als int wert an aufrufer retour*/
+ /**
+ *
+ * \brief Sucht nach Argumenten hinter '-m' und gibt sie als int Wert an Aufrufer retour
+ *
+ * \param argc Argument Counter
+ * \param argv Pointer auf den type-Parameter
+ *
+ * \return int 
+ * \retval -1 im Fehlerfall
+ *
+ */
  int do_ringbuffersize(int argc, char const argv[])
  {
-	 int optret = 0;
+	 int optret = 0; //Retrun Value of getopt()
 	 char *endptr = NULL;
 	 int foundargments = 0;
 	 
@@ -79,29 +89,45 @@
 
 	if (ringbufferSize <= 0)
 	{
-		fprintf("RINGBUFFERSIZE MUST BE <0 - Usage: -m <ringbuffer elements>\n ");
+		fprintf("RINGBUFFERSIZE MUST BE >0 - Usage: -m <ringbuffer elements>\n ");
 		return -1;
 	}		
 			
 	return ringbuffer;
  }
 	
-//legt semaphor für lese & schreibvorgang an
-//lesesemaphor wird im 2. schleifendurchlauf auf 0 gesetzt
+
+
+/**
+ *
+ * \brief legt semaphor für lese & schreibvorgang an
+ *	lesesemaphor wird im 2. schleifendurchlauf auf 0 gesetzt
+ * \param argc Argument Counter
+ * \param argv Pointer auf den type-Parameter
+ *
+ * \return int? 
+ * \retval -1 im Fehlerfall
+ *
+ */
+ //TODO: void und return werte in der Funktion?? Passt nicht
 void do_semaphorinit()
 {	
 	startbuffer = ringbuffer;
 
 	for(int i = 0, i < 2, i++){
+		
 		if(((semid[i] = seminit(key[i], 0660, startbuffer)) == -1){
+			
 			if(errno != EEXIST){
+				
 				if((semid[i] = semgrap(key[i])) ==1){
+					
 					gotanerror("ERROR WHILE GRABING SEMAPHOR - already existing, but not grabable");
-					//wegräumen des semaphors?
+					//TODO: wegräumen des semaphors?
 					return -1;
 				}
 				gotanerror("ERROR WHILE INITIALISING SEMAPHOR");
-				//wegräumen des semaphors?
+				//TODO: wegräumen des semaphors?
 				return -1;
 			}
 		}
