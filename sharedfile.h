@@ -16,13 +16,18 @@
  */
 
 /*
+ * --------------------------------------------------------------- defines --
+ */
+
+ 
+#ifndef SHAREDFILE_H
+#define SHAREDFILE_H
+ 
+/*
  * -------------------------------------------------------------- includes --
  */
 
 
-/*
- * --------------------------------------------------------------- defines --
- */
 
 
 
@@ -30,14 +35,21 @@
  * --------------------------------------------------------------- globals --
  */
 
+ extern char *FILENAME;
+ 
 /*
  * ------------------------------------------------------------- functions --
  */
 
-extern int do_ringbuffersize(int argc, char const argv[]);
-extern void do_semaphorinit();	
+int do_ringbuffersize(int argc, char* const argv[]);
+int do_semaphorinit(void);	
+int do_cleanup(void);
+void gotanerror(char *message);
 
-	
+
+
+#endif
 /*
  * =================================================================== eof ==
  */
+ 

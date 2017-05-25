@@ -9,27 +9,37 @@
  *
  * @date 2017
  *
- * @version 1.0.0.0
+ * @version 123
  *
  */
 
-#include "sharedfile.h" 
+#include <limits.h>
+#include <sys/shm.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sem182.h>
+#include <sys/ipc.h>
 
+#include <sem182.h>
+#include "sharedfile.h" 
  
- static int ringbuffer = 0;		//buffer - wird hinter -m beim programmaufruf angegeben
- static const char *FILENAME; //wird durch empfänger und sender gesetzt
- static int semid[2] = 0; //Semaphoren für Write[0] und Read[1]
- static int key[2] = {getpwuid()*1000,getpwuid()*1000 + 1};	//key für die semaphoren
+ 
+ static int ringbuffer = -1;							//buffer - wird hinter -m beim programmaufruf angegeben
+ char *FILENAME; 							//wird durch empfänger und sender gesetzt
+ static int semid[2]; 								//Semaphoren für Write[0] und Read[1]
+  
+ //static key_t key[2] = {getuid()* 1000, getuid() * 1000 + 1}; 	//key für die semaphoren
+ static key_t key[2] = {1932005, 1932006};
+ 
  /*
 	Im Header:
-	extern int do_ringbuffersize(int argc, char const argv[]);
-	extern void do_semaphorinit();	
+	int do_ringbuffersize(int argc, char const argv[]);
+	void do_semaphorinit(void);	
+	int do_cleanup(void);
+	void gotanerror(char *message);
  */
 
  
@@ -44,7 +54,7 @@
  * \retval -1 im Fehlerfall
  *
  */
- int do_ringbuffersize(int argc, char const argv[])
+ int do_ringbuffersize(int argc, char* const argv[])
  {
 	 int optret = 0; //Retrun Value of getopt()
 	 char *endptr = NULL;
@@ -56,18 +66,18 @@
 	
 		if(optret == 'm'){
 			
-			ringbuffersize = strtol(optarg, &endptr, 10)
-			if((errno == ERANGE || (ringbuffersize == LONG_MAX || ringbuffersize == LONG_MIN)) || (*endptr != '\0') || (errno != 0 && size == 0)){
+			ringbuffer = strtol(optarg, &endptr, 10);
+			if((errno == ERANGE || (ringbuffer == LONG_MAX || ringbuffer == LONG_MIN)) || (*endptr != '\0') || (errno != 0 && ringbuffer == 0)){
 				gotanerror("WRONG ARGUMENTS - Usage: -m <ringbuffer elements>\n ");
 				return -1;
 			}else{
-				argumentsfound = 1;
+				foundargments = 1;
 			}
 			
 		}else{
 		
 			if(optopt == 'm'){  //Wenn   getopt()   ein   Optionszeichen   nicht   erkennt,   wird   eine Fehlernachricht  nach  stderr  ausgegeben,  das   Zeichen   in   optoptgespeichert  und  `?'  zurückgegeben
-				gotanerror("WRONG ARGUMENTS - Usage: -m <ringbuffer elements>\n ")
+				gotanerror("WRONG ARGUMENTS - Usage: -m <ringbuffer elements>\n ");
 				return -1; 			
 			}
 			gotanerror("COULD NOT READ ARGUMENTS - Usage: -m <ringbuffer elements>\n");
@@ -77,22 +87,29 @@
 		
 	}
 		
-	if(mfound != 1){
-		gotanerror("COULD NOT FIND ARGUMENT BEHIND -m - Usage: -m <ringbuffer elements>\n ");
+	if(foundargments != 1){
+		gotanerror("NO ARGUMENT BEHIND -m - Usage: -m <ringbuffer elements>\n ");
 		return -1;
 	}	
-	if( optind < argc )
+	if(optind < argc )
 	{
-		gotanerror("THERE WAS AN ADDITIONAL ARGUMENT BEHIND -m - Usage: -m <ringbuffer elements>\n ");
+		gotanerror("ADDITIONAL ARGUMENT BEHIND -m - Usage: -m <ringbuffer elements>\n ");
 		return -1;
 	}
 
-	if (ringbufferSize <= 0)
+	if (ringbuffer <= 0)
 	{
-		fprintf("RINGBUFFERSIZE MUST BE >0 - Usage: -m <ringbuffer elements>\n ");
+		gotanerror("RINGBUFFERSIZE MUST BE >0 - Usage: -m <ringbuffer elements>\n ");
 		return -1;
-	}		
+	}			
 			
+			
+	/*if (ringbuffer > SHMMAX)
+	{
+		gotanerror("RINGBUFFERSIZE IS TOO BIG");
+		return -1;
+	}*/
+	
 	return ringbuffer;
  }
 	
@@ -110,42 +127,57 @@
  *
  */
  //TODO: void und return werte in der Funktion?? Passt nicht
-void do_semaphorinit()
+int do_semaphorinit(void)
 {	
-	startbuffer = ringbuffer;
-
-	for(int i = 0, i < 2, i++){
+	int startbuffer = ringbuffer;
+	int i = 0;
+	
+	for(i = 0; i < 2; i++){
 		
-		if(((semid[i] = seminit(key[i], 0660, startbuffer)) == -1){
+		if(((semid[i] = seminit(key[i], 0660, startbuffer)) == -1)){
 			
 			if(errno != EEXIST){
 				
-				if((semid[i] = semgrap(key[i])) ==1){
+				if((semid[i] = semgrab(key[i])) ==1){
 					
 					gotanerror("ERROR WHILE GRABING SEMAPHOR - already existing, but not grabable");
-					//TODO: wegräumen des semaphors?
+					do_cleanup();
 					return -1;
 				}
 				gotanerror("ERROR WHILE INITIALISING SEMAPHOR");
-				//TODO: wegräumen des semaphors?
+				do_cleanup();
 				return -1;
 			}
 		}
 		startbuffer = 0;
-	}			
+	}	
+	return 0;	
 }
 	
 	
-
-static void gotanerror(char *message)
-{																	/*Kein Fehlercode in errno*/
-	if(errno == 0){
-		fprintf(stderr,"%s: %s\n", FILENAME, message);
-	}
-																	/*Wenn Fehlercode in errno dann Ausgabe inkl. genauerer Fehlerinformation*/
-	else{
-		fprintf(stderr,"%s: FAILURE:%s // MSG:%s\n", FILENAME, strerror(errno), message);
+int do_cleanup(void)
+{
+	int i = 0;
+	//räume semaphot weg
+	for (i = 0; i<2 ; i++){
+		if (semrm(semid[i]) == -1) {
+			gotanerror("Removal was not successfull");
+			return EXIT_FAILURE;
+		}
 		
+		return EXIT_FAILURE; //damits kompiliert
 	}
+	return EXIT_FAILURE; //damits kompiliert
 	
+	//addressbereich wegräumen
+	//räume shm weg	
+	
+}
+
+void gotanerror(char *message)
+{																	/*Kein Fehlercode in errno*/
+	if(errno == 0) fprintf(stderr,"%s: %s\n", FILENAME, message);
+																	/*Wenn Fehlercode in errno dann Ausgabe inkl. genauerer Fehlerinformation*/
+	else fprintf(stderr,"%s: FAILURE:%s // MSG:%s\n", FILENAME, strerror(errno), message);
+			
 }	

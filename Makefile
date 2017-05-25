@@ -30,20 +30,27 @@ EXCLUDE_PATTERN=footrulewidth
 	$(CC) $(CFLAGS) -c $^
 ##------------------------------------------------------------------------------------------------
 
-all: sender empfaenger sharedfile
+all: sender empfaenger
 
-sender: $(OBJECTS)
-	$(CC) -o sender $(OBJECTS)
+sender: sender.o sharedfile.o
+	$(CC) $(CFLAGS) -o sender sender.o sharedfile.o -lsem182
 
-empfaenger: $(OBJECTS)
-	$(CC) -o empfaenger $(OBJECTS)  
+empfaenger: empfaenger.o sharedfile.o
+	$(CC) $(CFLAGS) -o empfaenger empfaenger.o sharedfile.o -lsem182
 
-sharedfile: $(OBJECTS)
-	$(CC) -o sharedfile $(OBJECTS)  
+empfaenger.o: empfaenger.c sharedfile.h
+	$(CC) $(CFLAGS) -c empfaenger.c
+
+sender.o: sender.c sharedfile.h
+	$(CC) $(CFLAGS) -c sender.c
+
+sharedfile.o: sharedfile.c sharedfile.h
+	$(CC) $(CFLAGS) -c sharedfile.c	
+
 	
 .PHONY: clean
 clean: 
-	$(RM) -f *.o popentest test-pipe
+	$(RM) -f *.o sender empfaenger
 
 .PHONY: distclean
 distclean: clean

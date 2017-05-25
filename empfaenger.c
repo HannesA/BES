@@ -22,6 +22,11 @@
 
 
 #include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include "sharedfile.h"
 
 /*
  * --------------------------------------------------------------- defines --
@@ -39,22 +44,18 @@
 	
 
 
-/**
- *
- * \brief Prueft die Aufrufparameter von mypopen
- *
- * Ueberprueft die Aufrufparameter auf Korrektheit und setzt die Errno entsprechend
- *
- * \param *command Pointer auf den command-Parameter
- * \param *type Pointer auf den type-Parameter
- *
- * \return int als Fehlercode
- * \retval 0 wenn Aufrufparameter ok
- * \retval 1 wenn Parameter fehlerhaft
- *
- */
-static int docheckinOpen(const char *command, const char *type)
+
+int main (int argc, char* argv[])
 {
+	char *FILENAME = argv[0];
+	
+	if (do_ringbuffersize(argc, argv) == -1) return EXIT_FAILURE; /*EXIT_FAILURE gehört zur stdlib.h*/
+	
+	if (do_semaphorinit() == -1 ) return EXIT_FAILURE;
+	
+	
+	fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error");	//damits kompiliert (FILENAME UNUSED)
+	return 0;
 }
 	
 /*
