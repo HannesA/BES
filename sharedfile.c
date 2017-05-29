@@ -136,9 +136,11 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
 					do_cleanup();
 					return -1;
 				}
-				gotanerror("ERROR WHILE INITIALISING SEMAPHOR");
-				do_cleanup();
-				return -1;
+
+			}else {
+			gotanerror("ERROR WHILE INITIALISING SEMAPHOR - no EEXIST message");
+			do_cleanup();
+			return -1;
 			}
 		}
 		startbuffer = 0;
