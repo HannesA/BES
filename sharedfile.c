@@ -90,21 +90,10 @@
 		
 	}
 		
-	if(foundargments != 1){
-		gotanerror("NO ARGUMENT BEHIND -m - Usage: -m <ringbuffer elements>\n ");
+	if(foundargments != 1 || optind < argc || ringbuffer <= 0){
+		gotanerror("INVALID ARGUMENT BEHIND -m - Usage: -m <ringbuffer elements>\n ");
 		return -1;
 	}	
-	if(optind < argc )
-	{
-		gotanerror("ADDITIONAL ARGUMENT BEHIND -m - Usage: -m <ringbuffer elements>\n ");
-		return -1;
-	}
-
-	if (ringbuffer <= 0)
-	{
-		gotanerror("RINGBUFFERSIZE MUST BE >0 - Usage: -m <ringbuffer elements>\n ");
-		return -1;
-	}			
 			
 			
 	/*if (ringbuffer > SHMMAX)
