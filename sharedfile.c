@@ -128,7 +128,7 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
 		
 		if(((semid[i] = seminit(key[i], 0660, startbuffer)) == -1)){
 			
-			if(errno != EEXIST){
+			if(errno == EEXIST){
 				
 				if((semid[i] = semgrab(key[i])) ==1){
 					
