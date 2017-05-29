@@ -52,7 +52,10 @@
 	
 	if (do_ringbuffersize(argc, argv) == -1) return EXIT_FAILURE; /*EXIT_FAILURE gehört zur stdlib.h*/
 	
-	if (do_semaphorinit() == -1 ) return EXIT_FAILURE;
+	if (do_semaphorinit() != 0 ) return EXIT_FAILURE;
+	
+	if (do_sharedmemory() != 0) return EXIT_FAILURE;
+	
 	
 	
 	fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error"); //damits kompiliert (FILENAME UNUSED)

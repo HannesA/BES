@@ -30,9 +30,12 @@
  static int ringbuffer = -1;							//buffer - wird hinter -m beim programmaufruf angegeben
  char *FILENAME; 							//wird durch empfänger und sender gesetzt
  static int semid[2]; 								//Semaphoren für Write[0] und Read[1]
-  
+ static int shmid = -1;
+ 
  //static key_t key[2] = {getuid()* 1000, getuid() * 1000 + 1}; 	//key für die semaphoren
  static key_t key[2] = {1932005, 1932006};
+ static key_t shmkey = 1932004;
+ 
  
  /*
 	Im Header:
@@ -54,7 +57,7 @@
  * \retval -1 im Fehlerfall
  *
  */
- int do_ringbuffersize(int argc, char* const argv[])
+ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter -m*/
  {
 	 int optret = 0; //Retrun Value of getopt()
 	 char *endptr = NULL;
@@ -126,8 +129,8 @@
  * \retval -1 im Fehlerfall
  *
  */
- //TODO: void und return werte in der Funktion?? Passt nicht
-int do_semaphorinit(void)
+ 
+int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im empfänger)*/
 {	
 	int startbuffer = ringbuffer;
 	int i = 0;
@@ -155,6 +158,22 @@ int do_semaphorinit(void)
 }
 	
 	
+	
+int do_sharedmemory(void) /*legt shared memory mit individuellem key an*/
+{
+	if((shmid = shmget(shmkey, ringbuffer, 0660|IPC_CREAT)) == -1)  // eröffne den shared memory mit rechten 0660
+	{
+		gotanerror("ERROR WHILE GETTING SHARED MEMORY");
+		do_cleanup();
+		return EXIT_FAILURE;
+	}
+	return 0;
+}	
+
+
+
+
+	
 int do_cleanup(void)
 {
 	int i = 0;
@@ -169,8 +188,8 @@ int do_cleanup(void)
 	}
 	return EXIT_FAILURE; //damits kompiliert
 	
-	//addressbereich wegräumen
-	//räume shm weg	
+	//TO-DO addressbereich wegräumen
+	//TO-DO räume shm weg	
 	
 }
 

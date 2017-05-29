@@ -35,7 +35,7 @@
  * --------------------------------------------------------------- globals --
  */
 
- extern char *FILENAME;
+ extern char *FILENAME; //extern weils im sharedfile.c definiert und in den empfänger und sender c files initialisiert wird
  
 /*
  * ------------------------------------------------------------- functions --
@@ -45,6 +45,7 @@ int do_ringbuffersize(int argc, char* const argv[]);
 int do_semaphorinit(void);	
 int do_cleanup(void);
 void gotanerror(char *message);
+int do_sharedmemory(void);
 
 
 
