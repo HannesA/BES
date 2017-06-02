@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/05/21
+ * @date 2017/06/02
  *
- * @version 0.1
+ * @version 0.2
  *
  *
  */
@@ -34,7 +34,7 @@
 /*
  * --------------------------------------------------------------- globals --
  */
-
+//Wirklich sinnvoll?
  extern char *FILENAME; //extern weils im sharedfile.c definiert und in den empfänger und sender c files initialisiert wird
  
 /*
@@ -46,7 +46,7 @@ int do_semaphorinit(void);
 int do_cleanup(void);
 void gotanerror(char *message);
 int do_sharedmemory(void);
-
+//Was braucht man hier noch??
 
 
 #endif

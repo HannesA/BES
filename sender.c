@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/05/21
+ * @date 2017/06/02
  *
- * @version 0.1
+ * @version 0.2
  *
  *
  */
@@ -18,26 +18,18 @@
 /*
  * -------------------------------------------------------------- includes --
  */
-
-
-
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include "sharedfile.h"
-
 /*
  * --------------------------------------------------------------- defines --
  */
-
-
-
 /*
  * --------------------------------------------------------------- globals --
  */
-
 /*
  * ------------------------------------------------------------- functions --
  */
@@ -56,7 +48,11 @@
 	
 	if (do_sharedmemory() != 0) return EXIT_FAILURE;
 	
+	//Shared Memory einbinden
 	
+	//Zeichenweises! Senden
+	
+	//Fehlerfall?
 	
 	fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error"); //damits kompiliert (FILENAME UNUSED)
 	return 0;

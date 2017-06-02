@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/05/21
+ * @date 2017/06/02
  *
- * @version 0.1
+ * @version 0.2
  *
  *
  */
@@ -55,6 +55,15 @@ int main (int argc, char* argv[])
 	
 	if (do_sharedmemory() != 0) return EXIT_FAILURE;
 	
+	// Shared Memory einbinden
+	
+	// Lesen
+	
+	//Fehlerbehandlung?
+	
+	//Ausgabe nach stdout
+	
+	// Semaphore und Shared Memory wegräumen
 	
 	fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error");	//damits kompiliert (FILENAME UNUSED)
 	return 0;

@@ -1,18 +1,22 @@
-/**
+ /**
  * @file sharedfile.c
- * Betriebsysteme Beispiel 3
+ * Betriebssysteme Ringbuffer
+ * Beispiel 3
  *
- * @author Daniel Scheidl 
- * @author Hannes Aurednik 
- * @author Eva Gergely 
- * @author Raphael Szabo 
+ * @author Hannes Aurednik <ic15b004@technikum-wien.at>
+ * @author Eva Dorottya Gergely <ic16b064@technikum-wien.at>
+ * @author Daniel Scheidl <ic16b073@technikum-wien.at>
+ * @author Raphael Szabo <ic16b062@technikum-wien.at>
+ * 
+ * @date 2017/06/02
  *
- * @date 2017
+ * @version 0.2
  *
- * @version 123
  *
  */
-
+/*
+ * -------------------------------------------------------------- includes --
+ */
 #include <limits.h>
 #include <sys/shm.h>
 #include <getopt.h>
@@ -22,11 +26,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ipc.h>
-
+#include <sys/types.h>
 #include <sem182.h>
 #include "sharedfile.h" 
- 
- 
+ /*
+ * --------------------------------------------------------------- defines --
+ */
+ /*
+ * --------------------------------------------------------------- globals --
+ */
  static int ringbuffer = -1;							//buffer - wird hinter -m beim programmaufruf angegeben
  char *FILENAME; 							//wird durch empfänger und sender gesetzt
  static int semid[2]; 								//Semaphoren für Write[0] und Read[1]
@@ -36,7 +44,10 @@
  static key_t key[2] = {1932005, 1932006};
  static key_t shmkey = 1932004;
  
- 
+ /*
+ * ------------------------------------------------------------ prototypes --
+ */
+ static void do_KeyInit(void);
  /*
 	Im Header:
 	int do_ringbuffersize(int argc, char const argv[]);
@@ -44,7 +55,25 @@
 	int do_cleanup(void);
 	void gotanerror(char *message);
  */
-
+ /*
+ * ------------------------------------------------------------- functions --
+ */
+ /**
+ *
+ * \brief Initialisiert die Keys abhaengig vom Aufrufer
+ *
+ * \param void
+ *
+ * \return void 
+ */
+static void do_KeyInit(void){
+	int tmp = (int) getuid(); /*Manpage: "These Functions are always successful"*/
+	tmp *= 1000;
+	key[0]=tmp+0;
+	key[1]=tmp+1;
+	shmkey = tmp+2;
+}
+ 
  
  /**
  *
@@ -118,7 +147,6 @@
  * \retval -1 im Fehlerfall
  *
  */
- 
 int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im empfänger)*/
 {	
 	int startbuffer = ringbuffer;
@@ -149,8 +177,16 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
 }
 	
 	
-	
-int do_sharedmemory(void) /*legt shared memory mit individuellem key an*/
+/**
+ *
+ * \brief legt shared memory mit individuellem key an
+ *	
+ *
+ * \return int
+ * \retval
+ *
+ */	
+int do_sharedmemory(void) 
 {
 	if((shmid = shmget(shmkey, ringbuffer, 0660|IPC_CREAT)) == -1)  // eröffne den shared memory mit rechten 0660
 	{
@@ -164,7 +200,15 @@ int do_sharedmemory(void) /*legt shared memory mit individuellem key an*/
 
 
 
-	
+/**
+ *
+ * \brief 
+ *	
+ *
+ * \return int
+ * \retval
+ *
+ */	
 int do_cleanup(void)
 {
 	int i = 0;
@@ -184,6 +228,15 @@ int do_cleanup(void)
 	
 }
 
+/**
+ *
+ * \brief Fehlerausgabe
+ *	
+ * \param *message Auszugebende Fehlermeldung
+ *
+ * \return void
+ *
+ */	
 void gotanerror(char *message)
 {																	/*Kein Fehlercode in errno*/
 	if(errno == 0) fprintf(stderr,"%s: %s\n", FILENAME, message);
@@ -191,3 +244,6 @@ void gotanerror(char *message)
 	else fprintf(stderr,"%s: FAILURE:%s // MSG:%s\n", FILENAME, strerror(errno), message);
 			
 }	
+/*
+ * =================================================================== eof ==
+ */
