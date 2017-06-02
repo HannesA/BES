@@ -41,20 +41,34 @@
  int main (int argc, char* argv[])
 {
 	char *FILENAME = argv[0];
+	int data = -1;
 	
-	if (do_ringbuffersize(argc, argv) == -1) return EXIT_FAILURE; /*EXIT_FAILURE gehört zur stdlib.h*/
+	/*----Umgebung anlegen und einbinden----*/
+	if (do_ringbuffersize(argc, argv) == -1) return EXIT_FAILURE; /*EXIT_FAILURE gehoert zur stdlib.h*/
 	
 	if (do_semaphorinit() != 0 ) return EXIT_FAILURE;
 	
 	if (do_sharedmemory() != 0) return EXIT_FAILURE;
 	
-	//Shared Memory einbinden
+	/*Shared Memory einbinden*/
+	if (do_attachSM(1) != 0) return EXIT_FAILURE; /*access_mode == 1 --> r&w sonst read only*/
+	/*----Eigentliche Verarbeitung----*/
 	
-	//Zeichenweises! Senden
-	
-	//Fehlerfall?
-	
-	fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error"); //damits kompiliert (FILENAME UNUSED)
+	do{
+		
+		
+		data = fgetc(stdin);
+		/*Senden = in Shared Memory schreiben*/
+		
+	}while(data != EOF);
+	//TODO: Errorhandling genug bzw an richtiger stelle?
+	if(ferror(stdin)!=0){
+		gotanerror("");
+		do_cleanup();
+		return EXIT_FAILURE;
+	}
+	//Empfaenger rauemt die Umgebung dann weg
+	fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error"); //TODO: damits kompiliert (FILENAME UNUSED)
 	return 0;
 }
 	

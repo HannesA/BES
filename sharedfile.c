@@ -39,7 +39,7 @@
  char *FILENAME; 							//wird durch empfänger und sender gesetzt
  static int semid[2]; 								//Semaphoren für Write[0] und Read[1]
  static int shmid = -1;
- 
+ static int *shmptr = NULL;
  //static key_t key[2] = {getuid()* 1000, getuid() * 1000 + 1}; 	//key für die semaphoren
  static key_t key[2] = {1932005, 1932006};
  static key_t shmkey = 1932004;
@@ -140,11 +140,12 @@ static void do_KeyInit(void){
  *
  * \brief legt semaphor für lese & schreibvorgang an
  *	lesesemaphor wird im 2. schleifendurchlauf auf 0 gesetzt
- * \param argc Argument Counter
- * \param argv Pointer auf den type-Parameter
  *
- * \return int? 
+ * \param void
+ *
+ * \return Integer
  * \retval -1 im Fehlerfall
+ * \retval 0 wenn erfolgreich
  *
  */
 int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im empfänger)*/
@@ -179,11 +180,13 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
 	
 /**
  *
- * \brief legt shared memory mit individuellem key an
+ * \brief Legt den Shared Memory an
  *	
+ * \param void
  *
  * \return int
- * \retval
+ * \retval 0 wenn erfolgreich
+ * \retval EXIT_FAILURE im Fehlerfall
  *
  */	
 int do_sharedmemory(void) 
@@ -195,8 +198,31 @@ int do_sharedmemory(void)
 		return EXIT_FAILURE;
 	}
 	return 0;
-}	
+}
+	
+/**
+ *
+ * \brief Bindet den Shared Memory ein
+ *	
+ * \param access_mode steuert ob read & write oder read only Zugriff
+ *
+ * \return integer
+ * \retval 0 wenn erfolgreich
+ * \retval EXIT_FAILURE im Fehlerfall
+ *
+ */	
+int do_attachSM(int access_mode) 
+{
+		shmptr = shmat(shmid, NULL, (access_mode == 1 ? 0 : SHM_RDONLY)); /*access_mode == 1 --> r&w sonst read only*/
+		if(shmptr == (int *) -1)
+		{
+			gotanerror("ERROR WHILE ATTACHING SHARED MEMORY");
+			do_cleanup();
+			return EXIT_FAILURE;
+		}
 
+	return 0;
+}	
 
 
 
@@ -204,12 +230,13 @@ int do_sharedmemory(void)
  *
  * \brief 
  *	
+ * \param void
  *
  * \return int
- * \retval
+ * \retval EXIT_FAILURE im Fehlerfall
  *
  */	
-int do_cleanup(void)
+int do_cleanup(void)//TODO: Return Wert notwendig?
 {
 	int i = 0;
 	//räume semaphot weg
@@ -228,9 +255,11 @@ int do_cleanup(void)
 	
 }
 
+
+
 /**
  *
- * \brief Fehlerausgabe
+ * \brief zentrale Fehlerausgabe
  *	
  * \param *message Auszugebende Fehlermeldung
  *

@@ -46,6 +46,7 @@ int do_semaphorinit(void);
 int do_cleanup(void);
 void gotanerror(char *message);
 int do_sharedmemory(void);
+int do_attachSM(int access_mode); 
 //Was braucht man hier noch??
 
 
