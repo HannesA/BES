@@ -72,7 +72,7 @@ int main (int argc, char* argv[])
 		if(fputc(data, stdout)==EOF){
 			if(ferror(stdout)!=0)
 			{ 
-				do_cleanup;
+				do_cleanup();
 				return EXIT_FAILURE;		
 			}
 		}
