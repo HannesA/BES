@@ -153,6 +153,8 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
 	int startbuffer = ringbuffer;
 	int i = 0;
 	
+	do_KeyInit(); //Damits es kompiliert. Hier koennten die Keys initialisiert werden
+	
 	for(i = 0; i < 2; i++){
 		
 		if(((semid[i] = seminit(key[i], 0660, startbuffer)) == -1)){
