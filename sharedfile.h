@@ -47,6 +47,7 @@ int do_cleanup(void);
 void gotanerror(char *message);
 int do_sharedmemory(void);
 int do_attachSM(int access_mode); 
+int do_writeSM(int data);
 //Was braucht man hier noch??
 
 

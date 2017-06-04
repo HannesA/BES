@@ -59,7 +59,7 @@
 		
 		data = fgetc(stdin);
 		/*Senden = in Shared Memory schreiben*/
-		
+		if(do_writeSM(data)==-1)gotanerror("ERROR Writing to Shared Memory");
 	}while(data != EOF);
 	//TODO: Errorhandling genug bzw an richtiger stelle?
 	if(ferror(stdin)!=0){

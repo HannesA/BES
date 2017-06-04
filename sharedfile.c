@@ -32,6 +32,8 @@
  /*
  * --------------------------------------------------------------- defines --
  */
+#define SENDERINDEX 0
+#define RECEIVERINDEX 1
  /*
  * --------------------------------------------------------------- globals --
  */
@@ -41,7 +43,7 @@
  static int shmid = -1;
  static int *shmptr = NULL;
  //static key_t key[2] = {getuid()* 1000, getuid() * 1000 + 1}; 	//key für die semaphoren
- static key_t key[2] = {1932005, 1932006};
+ static key_t key[2] = {1932005, 1932006}; /*[0] = Sender, [1] = Empfaenger*/
  static key_t shmkey = 1932004;
  
  /*
@@ -69,8 +71,8 @@
 static void do_KeyInit(void){
 	int tmp = (int) getuid(); /*Manpage: "These Functions are always successful"*/
 	tmp *= 1000;
-	key[0]=tmp+0;
-	key[1]=tmp+1;
+	key[SENDERINDEX]=tmp+0;
+	key[RECEIVERINDEX]=tmp+1;
 	shmkey = tmp+2;
 }
  
@@ -257,7 +259,47 @@ int do_cleanup(void)//TODO: Return Wert notwendig?
 	
 }
 
-
+/**
+ *
+ * \brief Schreibt ein Zeichen in den Shared Memory
+ *	
+ * \param data zu schreibendes Zeichen
+ *
+ * \return Integer zur Fehlererkennung
+ *
+ * \retval EXIT_FAILURE im Fehlerfall
+ * \retval 0 wenn erfolgreich
+ */	
+do_writeSM(int data){
+	
+	static int senderIndex = 0;
+	
+	while(P(key[SENDERINDEX])==-1)
+	{
+		if(errno == EINTR) continue;
+		gotanerror("ERROR P-ing Sender-Semaphor");
+		do_cleanup();
+		return EXIT_FAILURE;
+		
+	}
+	/*Critical Region*/
+	
+	shmptr[senderIndex] = data;
+	
+	
+	while(V(key[RECEIVERINDEX])==-1)
+	{
+		if(errno == EINTR) continue;
+		gotanerror("ERROR V-ing Receiver-Semaphor");
+		do_cleanup();
+		return EXIT_FAILURE;
+		
+	}
+	senderIndex++;
+	senderIndex%=ringbuffer;
+	
+	return 0;
+}
 
 /**
  *
