@@ -68,6 +68,7 @@
  *
  * \return void 
  */
+ 
 static void do_KeyInit(void){
 	int tmp = (int) getuid(); /*Manpage: "These Functions are always successful"*/
 	tmp *= 1000;
@@ -155,7 +156,7 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
 	int startbuffer = ringbuffer;
 	int i = 0;
 	
-	do_KeyInit(); //Damits es kompiliert. Hier koennten die Keys initialisiert werden
+	do_KeyInit(); //Hier werden die Keys wirklich initialisiert
 	
 	for(i = 0; i < 2; i++){
 		
@@ -300,6 +301,46 @@ int do_writeSM(int data){
 	
 	return 0;
 }
+
+
+/**
+ *
+ * \brief Liest ein Zeichen in den Shared Memory
+ *	
+ *
+ * \return Daten die gelesen wurden
+ *
+ */	
+int do_readSM(void){
+	
+	static int readIndex = 0;
+	int data = 0;
+	
+	while(P(key[RECEIVERINDEX])==-1)
+	{
+		if(errno == EINTR) continue;
+		gotanerror("ERROR P-ing Receiver-Semaphor");
+		do_cleanup();
+		return EXIT_FAILURE;	
+	}
+	/*Critical Region*/
+	data = shmptr[readIndex];
+	
+	readIndex++;
+	readIndex%=ringbuffer;
+	
+	while(V(key[SENDERINDEX])==-1)
+	{
+		if(errno == EINTR) continue;
+		gotanerror("ERROR V-ing Sender-Semaphor");
+		do_cleanup();
+		return EXIT_FAILURE;
+	}
+	
+	
+	return data;
+}
+
 
 /**
  *

@@ -66,7 +66,10 @@ int main (int argc, char* argv[])
 	while(1){
 	
 	// Fehlerbehandlung?
-	
+	if((data = do_readSM())==EXIT_FAILURE){
+		do_cleanup();
+		return EXIT_FAILURE;
+	}
 	// Ausgabe nach stdout
 	//TODO: Fehlerbehandlung vollstaendig?
 		if(fputc(data, stdout)==EOF){
