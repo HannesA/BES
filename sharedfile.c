@@ -270,7 +270,7 @@ int do_cleanup(void)//TODO: Return Wert notwendig?
  * \retval EXIT_FAILURE im Fehlerfall
  * \retval 0 wenn erfolgreich
  */	
-do_writeSM(int data){
+int do_writeSM(int data){
 	
 	static int senderIndex = 0;
 	
