@@ -39,7 +39,7 @@
 /*
  * --------------------------------------------------------------- globals --
  */
-static unsigned long ringbuffer = -1;							//buffer - wird hinter -m beim programmaufruf angegeben
+static unsigned long ringbuffer = 0;							//buffer - wird hinter -m beim programmaufruf angegeben
 char *FILENAME; 							//wird durch empfänger und sender gesetzt
 static int semid[2]; 								//Semaphoren für Write[0] und Read[1]
 static int shmid = -1;
