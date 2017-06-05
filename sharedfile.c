@@ -101,6 +101,7 @@ static unsigned int get_shmmax(void)
         return -1;//errorhandling needed
     }
     fclose(f);
+	
     return shmmax;
 }
 
@@ -149,7 +150,7 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
         switch (optret){
             case 'm':
                 ringbuffer = strtoul(optarg, &endptr, 10);
-                if((errno == ERANGE || ringbuffer == ULONG_MAX || (*endptr != '\0') || (errno != 0 && ringbuffer <= 0)||ringbuffer<=0/*||ringbuffer>sizeof(size_t)*/))
+                if((errno == ERANGE || ringbuffer >= ULONG_MAX || (*endptr != '\0') || (errno != 0 && ringbuffer <= 0)||ringbuffer<=0/*||ringbuffer>sizeof(size_t)*/))
                 {
                     if (ringbuffer>sizeof(size_t)) printf("ERROR");
                     gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENT");
@@ -231,13 +232,13 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
                 
                 if((semid[i] = semgrab(key[i])) == -1){
                     
-                    gotanerror("ERROR WHILE GRABING SEMAPHOR - already existing, but not grabable");
+                    gotanerror("Usage: ERROR WHILE GRABING SEMAPHOR - already existing, but not grabable");
                     do_cleanup();
                     return EXIT_FAILURE;
                 }
                 
             }else {
-                gotanerror("ERROR WHILE INITIALISING SEMAPHOR - no EEXIST message");
+                gotanerror("Usage: ERROR WHILE INITIALISING SEMAPHOR - no EEXIST message");
                 do_cleanup();
                 return EXIT_FAILURE;
             }
@@ -261,7 +262,7 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
  */
 int do_sharedmemory(void)
 {
-    if((shmid = shmget(shmkey, sizeof(ringbuffer), 0660|IPC_CREAT)) == -1)  // eröffne den shared memory mit rechten 0660
+    if((shmid = shmget(shmkey, (sizeof(int)*ringbuffer), 0660|IPC_CREAT)) == -1)  // eröffne den shared memory mit rechten 0660
     {
         gotanerror("ERROR WHILE GETTING SHARED MEMORY");
         do_cleanup();
