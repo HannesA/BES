@@ -94,6 +94,8 @@ static void do_KeyInit(void){
 	 int optret = 0; //Retrun Value of getopt()
 	 char *endptr = NULL;
 	 int foundargments = 0;
+	 extern int opterr;
+	 opterr = 0;
 	 
 	 
 	errno = 0;
@@ -103,7 +105,7 @@ static void do_KeyInit(void){
 			
 			ringbuffer = strtol(optarg, &endptr, 10);
 			if((errno == ERANGE || (ringbuffer == LONG_MAX || ringbuffer == LONG_MIN)) || (*endptr != '\0') || (errno != 0 && ringbuffer == 0)){
-				gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
+				gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
 				return -1;
 			}else{
 				foundargments = 1;
@@ -112,10 +114,10 @@ static void do_KeyInit(void){
 		}else{
 		
 			if(optopt == 'm'){  //Wenn   getopt()   ein   Optionszeichen   nicht   erkennt,   wird   eine Fehlernachricht  nach  stderr  ausgegeben,  das   Zeichen   in   optoptgespeichert  und  `?'  zurückgegeben
-				gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
+				gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
 				return -1; 			
 			}
-			gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - COULD NOT READ ARGUMENTS");
+			gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - COULD NOT READ ARGUMENTS");
 			return -1;
 		
 		}
@@ -123,7 +125,7 @@ static void do_KeyInit(void){
 	}
 		
 	if(foundargments != 1 || optind < argc || ringbuffer <= 0){
-		gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - INVALID ARGUMENT BEHIND -m");
+		gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - INVALID ARGUMENT BEHIND -m");
 		return -1;
 	}	
 			
