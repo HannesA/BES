@@ -103,7 +103,7 @@ static void do_KeyInit(void){
 			
 			ringbuffer = strtol(optarg, &endptr, 10);
 			if((errno == ERANGE || (ringbuffer == LONG_MAX || ringbuffer == LONG_MIN)) || (*endptr != '\0') || (errno != 0 && ringbuffer == 0)){
-				gotanerror("WRONG ARGUMENTS - Usage: -m <ringbuffer elements>\n ");
+				gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
 				return -1;
 			}else{
 				foundargments = 1;
@@ -112,10 +112,10 @@ static void do_KeyInit(void){
 		}else{
 		
 			if(optopt == 'm'){  //Wenn   getopt()   ein   Optionszeichen   nicht   erkennt,   wird   eine Fehlernachricht  nach  stderr  ausgegeben,  das   Zeichen   in   optoptgespeichert  und  `?'  zurückgegeben
-				gotanerror("WRONG ARGUMENTS - Usage: -m <ringbuffer elements>\n ");
+				gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
 				return -1; 			
 			}
-			gotanerror("COULD NOT READ ARGUMENTS - Usage: -m <ringbuffer elements>\n");
+			gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - COULD NOT READ ARGUMENTS");
 			return -1;
 		
 		}
@@ -123,7 +123,7 @@ static void do_KeyInit(void){
 	}
 		
 	if(foundargments != 1 || optind < argc || ringbuffer <= 0){
-		gotanerror("INVALID ARGUMENT BEHIND -m - Usage: -m <ringbuffer elements>\n ");
+		gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - INVALID ARGUMENT BEHIND -m");
 		return -1;
 	}	
 			
@@ -364,9 +364,9 @@ int do_readSM(void){
  */	
 void gotanerror(char *message)
 {																	/*Kein Fehlercode in errno*/
-	if(errno == 0) fprintf(stderr,"%s: %s\n", FILENAME, message);
+	if(errno == 0) fprintf(stderr,"%s: %s\n", message, FILENAME);
 																	/*Wenn Fehlercode in errno dann Ausgabe inkl. genauerer Fehlerinformation*/
-	else fprintf(stderr,"%s: FAILURE:%s // MSG:%s\n", FILENAME, strerror(errno), message);
+	else fprintf(stderr,"%s: FAILURE:%s, %s\n", message, strerror(errno), FILENAME);
 			
 }	
 /*

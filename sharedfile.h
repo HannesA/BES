@@ -35,7 +35,7 @@
  * --------------------------------------------------------------- globals --
  */
 //Wirklich sinnvoll?
- extern char *FILENAME; //extern weils im sharedfile.c definiert und in den empfänger und sender c files initialisiert wird
+extern char *FILENAME; //extern weils im sharedfile.c definiert und in den empfänger und sender c files initialisiert wird
  
 /*
  * ------------------------------------------------------------- functions --

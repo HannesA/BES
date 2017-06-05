@@ -47,7 +47,7 @@
 
 int main (int argc, char* argv[])
 {
-	char *FILENAME = argv[0];
+	FILENAME = argv[0];
 	int data = -1;
 	
 	/*----Umgebung anlegen und einbinden----*/
