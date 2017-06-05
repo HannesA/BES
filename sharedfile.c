@@ -164,17 +164,17 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
 			
 			if(errno == EEXIST){
 				
-				if((semid[i] = semgrab(key[i])) ==1){
+				if((semid[i] = semgrab(key[i])) == -1){
 					
 					gotanerror("ERROR WHILE GRABING SEMAPHOR - already existing, but not grabable");
 					do_cleanup();
-					return -1;
+					return EXIT_FAILURE;
 				}
 
 			}else {
 			gotanerror("ERROR WHILE INITIALISING SEMAPHOR - no EEXIST message");
 			do_cleanup();
-			return -1;
+			return EXIT_FAILURE;
 			}
 		}
 		startbuffer = 0;
@@ -247,17 +247,28 @@ int do_cleanup(void)//TODO: Return Wert notwendig?
 	//räume semaphot weg
 	for (i = 0; i<2 ; i++){
 		if (semrm(semid[i]) == -1) {
-			gotanerror("Removal was not successfull");
+			gotanerror("ERROR WHILE REMOVING SEMAPHOR");
 			return EXIT_FAILURE;
 		}
 		
 		return EXIT_FAILURE; //damits kompiliert
 	}
-	return EXIT_FAILURE; //damits kompiliert
 	
-	//TO-DO addressbereich wegräumen
-	//TO-DO räume shm weg	
+	//Blende SHM Adressbreich aus
+	if (shmdt(shmptr) == -1){
+		gotanerror("ERROR WHILE HIDING SHARED MEMORY SEGMENT");
+		return EXIT_FAILURE;
+	}
 	
+	//Entferne Shared Memory
+	if (shmctl(shmid, IPC_RMID, NULL) == 1){ 
+		gotanerror("ERROR WHILE REMOVING SHARED MEMORY SEGMENT");
+		return EXIT_FAILURE;
+	}
+	
+	return 0;
+		
+
 }
 
 /**
@@ -275,7 +286,7 @@ int do_writeSM(int data){
 	
 	static int senderIndex = 0;
 	
-	while(P(key[SENDERINDEX])==-1)
+	while(P(semid[SENDERINDEX])== -1)
 	{
 		if(errno == EINTR) continue;
 		gotanerror("ERROR P-ing Sender-Semaphor");
@@ -288,7 +299,7 @@ int do_writeSM(int data){
 	shmptr[senderIndex] = data;
 	
 	
-	while(V(key[RECEIVERINDEX])==-1)
+	while(V(semid[RECEIVERINDEX])==-1)
 	{
 		if(errno == EINTR) continue;
 		gotanerror("ERROR V-ing Receiver-Semaphor");
@@ -316,7 +327,7 @@ int do_readSM(void){
 	static int readIndex = 0;
 	int data = 0;
 	
-	while(P(key[RECEIVERINDEX])==-1)
+	while(P(semid[RECEIVERINDEX])==-1)
 	{
 		if(errno == EINTR) continue;
 		gotanerror("ERROR P-ing Receiver-Semaphor");
@@ -329,7 +340,7 @@ int do_readSM(void){
 	readIndex++;
 	readIndex%=ringbuffer;
 	
-	while(V(key[SENDERINDEX])==-1)
+	while(V(semid[SENDERINDEX])==-1)
 	{
 		if(errno == EINTR) continue;
 		gotanerror("ERROR V-ing Sender-Semaphor");
