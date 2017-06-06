@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sem182.h>
 #include "sharedfile.h"
+#include <stdint.h> //Maximum Int size TODO Remove?
 /*
  * --------------------------------------------------------------- defines --
  */
@@ -123,36 +124,16 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
     char *endptr = NULL;
     //int foundargments = 0;
     
-    
     errno = 0;
     while((optret = getopt(argc, argv, "m:")) != -1){
         
-        /*if(optret == 'm'){
-         
-         ringbuffer = strtol(optarg, &endptr, 10);
-         if((errno == ERANGE || (ringbuffer == LONG_MAX || ringbuffer == LONG_MIN)) || (*endptr != '\0') || (errno != 0 && ringbuffer == 0)){
-         //gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
-         return -1;
-         }else{
-         foundargments = 1;
-         }
-         
-         }else{
-         
-         if(optopt == 'm'){  //Wenn   getopt()   ein   Optionszeichen   nicht   erkennt,   wird   eine Fehlernachricht  nach  stderr  ausgegeben,  das   Zeichen   in   optoptgespeichert  und  `?'  zurückgegeben
-         //gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
-         return -1;
-         }
-         //gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - COULD NOT READ ARGUMENTS");
-         return -1;
-         
-         }*/
+        
         switch (optret){
             case 'm':
                 ringbuffer = strtoul(optarg, &endptr, 10);
                 if((errno == ERANGE || ringbuffer >= ULONG_MAX || (*endptr != '\0') || (errno != 0 && ringbuffer <= 0)||ringbuffer<=0/*||ringbuffer>sizeof(size_t)*/))
                 {
-                    if (ringbuffer>sizeof(size_t)) printf("ERROR");
+                    if (ringbuffer>sizeof(size_t)) printf("Usage: ERROR");
                     gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENT");
                     return -1;
                 }
@@ -164,7 +145,7 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
                     }
                     else
                     {
-                        if (ringbuffer>=get_shmmax()){
+                        if (ringbuffer>sizeof(size_t)){
                             gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - BUFFER SIZE TOO LARGE");
                             return -1;
                         }
@@ -184,10 +165,34 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
         }
         
     }
+	//nur zum kompilieren
+	if(get_shmmax()){errno=0;}
+	
     
     gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG OPTION");
     return -1;
-    
+	
+    /*if(optret == 'm'){
+         
+         ringbuffer = strtol(optarg, &endptr, 10);
+         if((errno == ERANGE || (ringbuffer == LONG_MAX || ringbuffer == LONG_MIN)) || (*endptr != '\0') || (errno != 0 && ringbuffer == 0)){
+         //gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
+         return -1;
+         }else{
+         foundargments = 1;
+         }
+         
+         }else{
+         
+         if(optopt == 'm'){  //Wenn   getopt()   ein   Optionszeichen   nicht   erkennt,   wird   eine Fehlernachricht  nach  stderr  ausgegeben,  das   Zeichen   in   optoptgespeichert  und  `?'  zurückgegeben
+         //gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
+         return -1;
+         }
+         //gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - COULD NOT READ ARGUMENTS");
+         return -1;
+         
+         }*/
+	
     /*if(foundargments != 1 || optind < argc || ringbuffer <= 0){
      //gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - INVALID ARGUMENT BEHIND -m");
      return -1;
@@ -417,7 +422,6 @@ int do_readSM(void){
     
     return data;
 }
-
 
 /**
  *
