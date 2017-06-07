@@ -144,10 +144,9 @@ static unsigned long get_shmall(void)
  */
 int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter -m*/
 {
-    int optret = 0; //Retrun Value of getopt()
+	int optret = 0; //Retrun Value of getopt()
     char *endptr = NULL;
     //int foundargments = 0;
-    
     errno = 0;
     while((optret = getopt(argc, argv, "m:")) != -1){
         
@@ -257,7 +256,7 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
  */
 int do_sharedmemory(void)
 {
-    if((shmid = shmget(shmkey, (sizeof(int)*ringbuffer), 0660|IPC_CREAT)) == -1)  // eröffne den shared memory mit rechten 0660
+    if((shmid = shmget(shmkey,sizeof(int)*ringbuffer, 0660|IPC_CREAT)) == -1)  // eröffne den shared memory mit rechten 0660
     {
         gotanerror("ERROR WHILE GETTING SHARED MEMORY");
         do_cleanup();
@@ -279,7 +278,7 @@ int do_sharedmemory(void)
  */
 int do_attachSM(int access_mode)
 {
-    shmptr = shmat(shmid, NULL, (access_mode == 1 ? 0 : SHM_RDONLY)); /*access_mode == 1 --> r&w sonst read only*/
+	shmptr = shmat(shmid, NULL, (access_mode == 1 ? 0 : SHM_RDONLY)); /*access_mode == 1 --> r&w sonst read only*/
     if(shmptr == (int *) -1)
     {
         gotanerror("ERROR WHILE ATTACHING SHARED MEMORY");

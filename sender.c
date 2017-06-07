@@ -56,17 +56,19 @@
 	
 	do{
 		
-		
 		data = fgetc(stdin);
 		/*Senden = in Shared Memory schreiben*/
+		
+		if(ferror(stdin)!=0)
+		{
+			gotanerror("");
+			do_cleanup();
+			return EXIT_FAILURE;
+		}
 		if(do_writeSM(data)==-1)gotanerror("ERROR Writing to Shared Memory");
 	}while(data != EOF);
 	//TODO: Errorhandling genug bzw an richtiger stelle?
-	if(ferror(stdin)!=0){
-		gotanerror("");
-		do_cleanup();
-		return EXIT_FAILURE;
-	}
+	
 	//Empfaenger rauemt die Umgebung dann weg
 	fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error"); //TODO: damits kompiliert (FILENAME UNUSED)
 	return 0;
