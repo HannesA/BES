@@ -88,15 +88,15 @@ static void do_KeyInit(void){
  *
  * \return SHMMAX Value
  */
-static unsigned int get_shmmax(void)
+static unsigned long get_shmmax(void)
 {
-    unsigned int shmmax;
+    unsigned long shmmax;
     FILE *f = fopen(SHMMAX_SYS_FILE,"r");
     if(!f){
         gotanerror("Unable to read /proc/sys/shmmax");
         return -1;//errorhanling needed
     }
-    if(fscanf(f,"%u", &shmmax) !=1){
+    if(fscanf(f,"%lu", &shmmax) !=1){
         gotanerror("Unable to read /proc/sys/shmmax");
         fclose(f);
         return -1;//errorhandling needed
@@ -133,7 +133,7 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
                 ringbuffer = strtoul(optarg, &endptr, 10);
                 if((errno == ERANGE || ringbuffer >= ULONG_MAX || (*endptr != '\0') || (errno != 0 && ringbuffer <= 0)||ringbuffer<=0/*||ringbuffer>sizeof(size_t)*/))
                 {
-                    if (ringbuffer>sizeof(size_t)) printf("Usage: ERROR");
+                    //if (ringbuffer>sizeof(size_t)) printf("Usage: ERROR");
                     gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENT");
                     return -1;
                 }
@@ -145,7 +145,7 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
                     }
                     else
                     {
-                        if (ringbuffer>sizeof(size_t)){
+                        if (ringbuffer>1073741823){
                             gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - BUFFER SIZE TOO LARGE");
                             return -1;
                         }
@@ -243,7 +243,7 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
                 }
                 
             }else {
-                gotanerror("Usage: ERROR WHILE INITIALISING SEMAPHOR - no EEXIST message");
+                //gotanerror("Usage: ERROR WHILE INITIALISING SEMAPHOR - no EEXIST message");
                 do_cleanup();
                 return EXIT_FAILURE;
             }
