@@ -36,7 +36,7 @@
 #define SENDERINDEX 0
 #define RECEIVERINDEX 1
 #define SHMMAX_SYS_FILE "/proc/sys/kernel/shmmax"
-#define SHMMIN_SYS_FILE "/proc/sys/kernel/shmmin"
+#define SHMALL_SYS_FILE "/proc/sys/kernel/shmall"
 /*
  * --------------------------------------------------------------- globals --
  */
@@ -105,7 +105,31 @@ static unsigned long get_shmmax(void)
 	
     return shmmax;
 }
-
+/**
+ *
+ * \brief Holt die den SHMALL Wert -> Maximale Groesse eines Shared Memories
+ *
+ * \param void
+ *
+ * \return SHMALL Value
+ */
+static unsigned long get_shmall(void)
+{
+    unsigned long shmall;
+    FILE *f = fopen(SHMALL_SYS_FILE,"r");
+    if(!f){
+        gotanerror("Unable to read /proc/sys/shmall");
+        return -1;//errorhanling needed
+    }
+    if(fscanf(f,"%lu", &shmall) !=1){
+        gotanerror("Unable to read /proc/sys/shmall");
+        fclose(f);
+        return -1;//errorhandling needed
+    }
+    fclose(f);
+	
+    return shmall*4;
+}
 
 /**
  *
@@ -131,7 +155,7 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
         switch (optret){
             case 'm':
                 ringbuffer = strtoul(optarg, &endptr, 10);
-                if((errno == ERANGE || ringbuffer >= ULONG_MAX || (*endptr != '\0') || (errno != 0 && ringbuffer <= 0)||ringbuffer<=0/*||ringbuffer>sizeof(size_t)*/))
+                if((errno == ERANGE || ringbuffer == ULONG_MAX || (*endptr != '\0') || (errno != 0 && ringbuffer <= 0)||ringbuffer<=0/*||ringbuffer>sizeof(size_t)*/))
                 {
                     //if (ringbuffer>sizeof(size_t)) printf("Usage: ERROR");
                     gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENT");
@@ -145,7 +169,7 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
                     }
                     else
                     {
-                        if (ringbuffer>1073741823){
+                        if (ringbuffer>=(get_shmall())){
                             gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - BUFFER SIZE TOO LARGE");
                             return -1;
                         }
@@ -172,40 +196,6 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
     gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG OPTION");
     return -1;
 	
-    /*if(optret == 'm'){
-         
-         ringbuffer = strtol(optarg, &endptr, 10);
-         if((errno == ERANGE || (ringbuffer == LONG_MAX || ringbuffer == LONG_MIN)) || (*endptr != '\0') || (errno != 0 && ringbuffer == 0)){
-         //gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
-         return -1;
-         }else{
-         foundargments = 1;
-         }
-         
-         }else{
-         
-         if(optopt == 'm'){  //Wenn   getopt()   ein   Optionszeichen   nicht   erkennt,   wird   eine Fehlernachricht  nach  stderr  ausgegeben,  das   Zeichen   in   optoptgespeichert  und  `?'  zurückgegeben
-         //gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENTS");
-         return -1;
-         }
-         //gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - COULD NOT READ ARGUMENTS");
-         return -1;
-         
-         }*/
-	
-    /*if(foundargments != 1 || optind < argc || ringbuffer <= 0){
-     //gotanerror("usage: ./PROGRAMM -m <buffersize 1 to x> - INVALID ARGUMENT BEHIND -m");
-     return -1;
-     }*/
-    
-    
-    /*if (ringbuffer > SHMMAX)
-     {
-     gotanerror("RINGBUFFERSIZE IS TOO BIG");
-     return -1;
-     }*/
-    
-    //return ringbuffer;
 }
 
 
@@ -224,7 +214,7 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
  */
 int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im empfänger)*/
 {
-    int startbuffer = ringbuffer;
+    unsigned long startbuffer = ringbuffer;
     int i = 0;
     
     do_KeyInit(); //Hier werden die Keys wirklich initialisiert
