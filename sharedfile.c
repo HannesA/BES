@@ -42,12 +42,12 @@
  */
 static unsigned long ringbuffer = 0;							//buffer - wird hinter -m beim programmaufruf angegeben
 char *FILENAME; 							//wird durch empfänger und sender gesetzt
-static int semid[2]; 								//Semaphoren für Write[0] und Read[1]
+static int semid[2] = {-1, -1}; 								//Semaphoren für Write[0] und Read[1]
 static int shmid = -1;
 static int *shmptr = NULL;
 //static key_t key[2] = {getuid()* 1000, getuid() * 1000 + 1}; 	//key für die semaphoren
-static key_t key[2] = {1932005, 1932006}; /*[0] = Sender, [1] = Empfaenger*/
-static key_t shmkey = 1932004;
+static key_t key[2] = {-1, -1}; /*[0] = Sender, [1] = Empfaenger*/
+static key_t shmkey = -1;
 
 /*
  * ------------------------------------------------------------ prototypes --
@@ -303,32 +303,33 @@ int do_attachSM(int access_mode)
  */
 int do_cleanup(void)//TODO: Return Wert notwendig?
 {
-    int i = 0;
-    //räume semaphot weg
-    for (i = 0; i<2 ; i++){
-        if (semrm(semid[i]) == -1) {
-            gotanerror("ERROR WHILE REMOVING SEMAPHOR");
-            return EXIT_FAILURE;
-        }
-        
-        return EXIT_FAILURE; //damits kompiliert
+    int tmp_counter = 0;
+    /*Semaphoren wegrauemen*/
+    for (tmp_counter = 0; tmp_counter<2 ; tmp_counter++){
+        if(semid[tmp_counter]!=-1){
+			if (semrm(semid[tmp_counter]) == -1) {
+				gotanerror("ERROR WHILE REMOVING SEMAPHOR");
+				return EXIT_FAILURE;
+			}
+			semid[tmp_counter] = -1;
+		}
+        //return EXIT_FAILURE; //damits kompiliert?
     }
-    
-    //Blende SHM Adressbreich aus
-    if (shmdt(shmptr) == -1){
-        gotanerror("ERROR WHILE HIDING SHARED MEMORY SEGMENT");
-        return EXIT_FAILURE;
+    if(shmptr!=NULL && shmid != -1){
+		/*Blende SHM Adressbreich aus*/
+		if (shmdt(shmptr) == -1){
+			gotanerror("ERROR WHILE HIDING SHARED MEMORY SEGMENT");
+			return EXIT_FAILURE;
+		}
+		shmptr = NULL;
+		/*Entferne Shared Memory*/
+		if (shmctl(shmid, IPC_RMID, NULL) == 1){
+			gotanerror("ERROR WHILE REMOVING SHARED MEMORY SEGMENT");
+			return EXIT_FAILURE;
+		}
+		shmid = -1;
     }
-    
-    //Entferne Shared Memory
-    if (shmctl(shmid, IPC_RMID, NULL) == 1){
-        gotanerror("ERROR WHILE REMOVING SHARED MEMORY SEGMENT");
-        return EXIT_FAILURE;
-    }
-    
     return 0;
-    
-    
 }
 
 /**
