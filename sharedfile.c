@@ -396,9 +396,19 @@ int do_readSM(void){
     int data = 0;
     
     while(P(semid[RECEIVERINDEX])==-1)
-    {
+    {	
         if(errno!= EINTR){
 			gotanerror("ERROR P-ing Receiver-Semaphor");
+			do_cleanup();
+			return EXIT_FAILURE;
+        }
+		if(errno!= ENFILE){
+			gotanerror("ERROR zuviele shareds offen");
+			do_cleanup();
+			return EXIT_FAILURE;
+        }
+		if(errno!= EEXIST){
+			gotanerror("ERROR existiert");
 			do_cleanup();
 			return EXIT_FAILURE;
         }

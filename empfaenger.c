@@ -70,6 +70,12 @@ int main (int argc, char* argv[])
 	do{
 		
 		if((data=do_readSM())==EXIT_FAILURE){
+		
+			if(errno == ENFILE) gotanerror("ERROR Too many shared memory objects are currently open in the system");
+			if(errno == EEXIST) gotanerror("ERROR O_CREAT and O_EXCL are set and the named shared memory object already exists.");
+			if(errno == EMFILE) gotanerror("ERROR Too many file descriptors are currently in use by this process.");
+			if(errno == EACCES) gotanerror("ERROR The shared memory object exists and the permissions specified by oflag are denied,");
+        
 			gotanerror("ERROR reading from Shared Memory");
             do_cleanup();
 			return EXIT_FAILURE;
