@@ -49,6 +49,7 @@ int do_sharedmemory(void);
 int do_attachSM(int access_mode); 
 int do_writeSM(int data);
 int do_readSM(void);
+
 //Was braucht man hier noch??
 
 

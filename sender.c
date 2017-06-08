@@ -65,17 +65,19 @@
 			do_cleanup();
 			return EXIT_FAILURE;
 		}
+		
 		if(do_writeSM(data)==EXIT_FAILURE){
 			gotanerror("ERROR Writing to Shared Memory");
 			return EXIT_FAILURE;
 		}
+		//printf("%c",data);
 		
 	}while(data !=  EOF);
 	//TODO: Errorhandling genug bzw an richtiger stelle?
-	
+	return 0;
 	//Empfaenger rauemt die Umgebung dann weg
 	//fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error"); //TODO: damits kompiliert (FILENAME UNUSED)
-	return 0;
+	//return 0;
 }
 	
 /*

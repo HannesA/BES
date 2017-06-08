@@ -335,6 +335,7 @@ int do_cleanup(void)//TODO: Return Wert notwendig?
     return 0;
 }
 
+
 /**
  *
  * \brief Schreibt ein Zeichen in den Shared Memory

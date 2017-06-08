@@ -53,7 +53,7 @@ int main (int argc, char* argv[])
 	/*----Umgebung anlegen und einbinden----*/
 	if (do_ringbuffersize(argc, argv) == -1) return EXIT_FAILURE; /*EXIT_FAILURE gehört zur stdlib.h*/
 	
-	if (do_semaphorinit() == -1 ) return EXIT_FAILURE;
+	if (do_semaphorinit() != 0 ) return EXIT_FAILURE;
 	
 	if (do_sharedmemory() != 0) return EXIT_FAILURE;
 	
@@ -66,7 +66,7 @@ int main (int argc, char* argv[])
         do_cleanup();
 		return EXIT_FAILURE;
     }
-	
+	//while(data!= (int) EOF){
 	do{
 		
 		if((data=do_readSM())==EXIT_FAILURE){
@@ -74,7 +74,8 @@ int main (int argc, char* argv[])
             do_cleanup();
 			return EXIT_FAILURE;
 		}
-		if(fputc(data, stdout)== EOF){
+		if(data==EOF) break;
+		if(putchar(data)==EOF){
 			if(ferror(stdout)!=0)
 			{ 
 				gotanerror("ERROR writing to stdout");
@@ -82,7 +83,8 @@ int main (int argc, char* argv[])
 				return EXIT_FAILURE;		
 			}
 		}
-	}while(data!= (int) EOF);
+	}while(data!= EOF);
+	//}
 	/*----Eigentliche Verarbeitung----*/
 	/*
 	while(int data = funktion die noch wer schreiben muss und zeichenweise aus dem shared memory liest)!=EOF{
@@ -111,10 +113,10 @@ int main (int argc, char* argv[])
 		return EXIT_FAILURE; 
 	}
 	// Semaphore und Shared Memory wegräumen
-	do_cleanup();
+	
 	
 	//fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error");	//damits kompiliert (FILENAME UNUSED)
-	return 0;
+	return do_cleanup();;
 }
 	
 /*
