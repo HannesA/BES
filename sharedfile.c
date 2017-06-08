@@ -353,10 +353,12 @@ int do_writeSM(int data){
     
     while(P(semid[SENDERINDEX])== -1)
     {
-        if(errno == EINTR) continue;
-        gotanerror("ERROR P-ing Sender-Semaphor");
-        do_cleanup();
-        return EXIT_FAILURE;
+        if(errno!= EINTR){
+			gotanerror("ERROR P-ing Sender-Semaphor");
+			do_cleanup();
+			return EXIT_FAILURE;
+        }
+		errno = 0;
         
     }
     /*Critical Region*/
@@ -367,11 +369,12 @@ int do_writeSM(int data){
     
     while(V(semid[RECEIVERINDEX])==-1)
     {
-        if(errno == EINTR) continue;
-        gotanerror("ERROR V-ing Receiver-Semaphor");
-        do_cleanup();
-        return EXIT_FAILURE;
-        
+        if(errno!= EINTR){
+			gotanerror("ERROR V-ing Receiver-Semaphor");
+			do_cleanup();
+			return EXIT_FAILURE;
+        }
+		errno = 0;
     }
     
     
@@ -394,10 +397,12 @@ int do_readSM(void){
     
     while(P(semid[RECEIVERINDEX])==-1)
     {
-        if(errno == EINTR) continue;
-        gotanerror("ERROR P-ing Receiver-Semaphor");
-        do_cleanup();
-        return EXIT_FAILURE;
+        if(errno!= EINTR){
+			gotanerror("ERROR P-ing Receiver-Semaphor");
+			do_cleanup();
+			return EXIT_FAILURE;
+        }
+		errno = 0;
     }
     /*Critical Region*/
     data = shmptr[readIndex];
@@ -407,10 +412,12 @@ int do_readSM(void){
     
     while(V(semid[SENDERINDEX])==-1)
     {
-        if(errno == EINTR) continue;
-        gotanerror("ERROR V-ing Sender-Semaphor");
-        do_cleanup();
-        return EXIT_FAILURE;
+        if(errno!= EINTR){
+			gotanerror("ERROR V-ing Sender-Semaphor");
+			do_cleanup();
+			return EXIT_FAILURE;
+        }
+		errno = 0;
     }
     
     

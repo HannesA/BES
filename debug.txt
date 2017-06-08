@@ -1,0 +1,10 @@
+./test_sender_empfaenger.sh: Using sender binary ./sender
+./test_sender_empfaenger.sh: Using empfaenger binary ./empfaenger
+./test_sender_empfaenger.sh: Using a delay time of 15 seconds for the tests 16 and 17
+./test_sender_empfaenger.sh: Stopping on failed tests
+./test_sender_empfaenger.sh: Placing temporary files in /home/ic15b004/.tmp
+./test_sender_empfaenger.sh: Using coloring auto
+./test_sender_empfaenger.sh: ----- Test 16: Transfer of huge binary file -----
+./test_sender_empfaenger.sh: Test successful: Process ./sender with PID 30573 terminated correctly
+./test_sender_empfaenger.sh: Test successful: Process ./empfaenger with PID 30572 terminated correctly
+./test_sender_empfaenger.sh: Test failed: Process ./sender with PID 30573 terminated with exit status 1 instead of 0
