@@ -60,16 +60,39 @@ int main (int argc, char* argv[])
 	
 	if (do_attachSM(0) != 0) return EXIT_FAILURE; /*access_mode == 1 --> r&w sonst read only*/
 	
-	/*----Eigentliche Verarbeitung----*/
+	if (ferror(stdin))
+    {
+        gotanerror("ERROR in stdin");
+        do_cleanup();
+		return EXIT_FAILURE;
+    }
 	
-	/*while(int data = funktion die noch wer schreiben muss und zeichenweise aus dem shared memory liest)!=EOF{*/
-	while(1){
+	while(data!=(int)EOF){
+		
+		if((data=do_readSM())==EXIT_FAILURE){
+			gotanerror("ERROR reading from Shared Memory");
+            do_cleanup();
+			return EXIT_FAILURE;
+		}
+		if(fputc(data, stdout)== EOF){
+			if(ferror(stdout)!=0)
+			{ 
+				gotanerror("ERROR writing to stdout");
+				do_cleanup();
+				return EXIT_FAILURE;		
+			}
+		}
+	}
+	/*----Eigentliche Verarbeitung----*/
+	/*
+	while(int data = funktion die noch wer schreiben muss und zeichenweise aus dem shared memory liest)!=EOF{
+	do{
 	
 	// Fehlerbehandlung?
-	if((data = do_readSM())==EXIT_FAILURE){
-		do_cleanup();
-		return EXIT_FAILURE;
-	}
+		if((data = do_readSM())==EXIT_FAILURE){
+			do_cleanup();
+			return EXIT_FAILURE;
+		}
 	// Ausgabe nach stdout
 	//TODO: Fehlerbehandlung vollstaendig?
 		if(fputc(data, stdout)==EOF){
@@ -80,11 +103,17 @@ int main (int argc, char* argv[])
 			}
 		}
 	
+	}while(data!=EOF);
+	*/
+	if (fflush(stdout) == EOF)
+	{
+		gotanerror("ERROR fflush");
+		return EXIT_FAILURE; 
 	}
 	// Semaphore und Shared Memory wegräumen
 	do_cleanup();
 	
-	fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error");	//damits kompiliert (FILENAME UNUSED)
+	//fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error");	//damits kompiliert (FILENAME UNUSED)
 	return 0;
 }
 	
