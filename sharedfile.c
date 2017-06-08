@@ -305,30 +305,33 @@ int do_cleanup(void)//TODO: Return Wert notwendig?
 {
     int tmp_counter = 0;
     /*Semaphoren wegrauemen*/
-    for (tmp_counter = 0; tmp_counter<2 ; tmp_counter++){
-        if(semid[tmp_counter]!=-1){
-			if (semrm(semid[tmp_counter]) == -1) {
-				gotanerror("ERROR WHILE REMOVING SEMAPHOR");
-				return EXIT_FAILURE;
-			}
-			semid[tmp_counter] = -1;
+	//if(semid[0]!=-1||semid[1]!=-1){
+		for (tmp_counter = 0; tmp_counter<2 ; tmp_counter++){
+			
+				if (semrm(semid[tmp_counter]) == -1) {
+					gotanerror("ERROR WHILE REMOVING SEMAPHOR");
+					return EXIT_FAILURE;
+				}
+				semid[tmp_counter] = -1;
+			
+			//return EXIT_FAILURE; //damits kompiliert?
 		}
-        //return EXIT_FAILURE; //damits kompiliert?
-    }
-    if(shmptr!=NULL && shmid != -1){
+	//}
+    //if(shmptr!=NULL || shmid != -1){
 		/*Blende SHM Adressbreich aus*/
 		if (shmdt(shmptr) == -1){
 			gotanerror("ERROR WHILE HIDING SHARED MEMORY SEGMENT");
 			return EXIT_FAILURE;
 		}
-		shmptr = NULL;
+		
 		/*Entferne Shared Memory*/
 		if (shmctl(shmid, IPC_RMID, NULL) == 1){
 			gotanerror("ERROR WHILE REMOVING SHARED MEMORY SEGMENT");
 			return EXIT_FAILURE;
 		}
 		shmid = -1;
-    }
+		shmptr = NULL;
+    //}
     return 0;
 }
 
@@ -358,7 +361,8 @@ int do_writeSM(int data){
     /*Critical Region*/
     
     shmptr[senderIndex] = data;
-    
+    senderIndex++;
+    senderIndex%=ringbuffer;
     
     while(V(semid[RECEIVERINDEX])==-1)
     {
@@ -368,8 +372,7 @@ int do_writeSM(int data){
         return EXIT_FAILURE;
         
     }
-    senderIndex++;
-    senderIndex%=ringbuffer;
+    
     
     return 0;
 }

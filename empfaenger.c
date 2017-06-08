@@ -52,23 +52,23 @@ int main (int argc, char* argv[])
 	
 	/*----Umgebung anlegen und einbinden----*/
 	if (do_ringbuffersize(argc, argv) == -1) return EXIT_FAILURE; /*EXIT_FAILURE gehört zur stdlib.h*/
-	printf("Debug Size\n");
+	
 	if (do_semaphorinit() == -1 ) return EXIT_FAILURE;
-	printf("Debug Semaphor\n");
+	
 	if (do_sharedmemory() != 0) return EXIT_FAILURE;
-	printf("Debug Shared\n");
+	
 	
 	if (do_attachSM(0) != 0) return EXIT_FAILURE; /*access_mode == 1 --> r&w sonst read only*/
-	printf("Debug Attach\n");
+	
 	if (ferror(stdin))
     {
         gotanerror("ERROR in stdin");
         do_cleanup();
 		return EXIT_FAILURE;
     }
-	printf("Debug Lesen\n");
+	
 	do{
-		printf("Debug Schleife\n");
+		
 		if((data=do_readSM())==EXIT_FAILURE){
 			gotanerror("ERROR reading from Shared Memory");
             do_cleanup();
