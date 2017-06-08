@@ -65,7 +65,7 @@
 			do_cleanup();
 			return EXIT_FAILURE;
 		}
-		if(data==EOF) continue;
+		
 		if(do_writeSM(data)==EXIT_FAILURE){
 			gotanerror("ERROR Writing to Shared Memory");
 			return EXIT_FAILURE;
