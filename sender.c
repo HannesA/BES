@@ -55,7 +55,7 @@
 	/*----Eigentliche Verarbeitung----*/
 	
 	do{
-		
+		errno=0;
 		data = fgetc(stdin);
 		/*Senden = in Shared Memory schreiben*/
 		
@@ -70,7 +70,7 @@
 			return EXIT_FAILURE;
 		}
 		
-	}while(data != EOF);
+	}while(data !=  EOF);
 	//TODO: Errorhandling genug bzw an richtiger stelle?
 	
 	//Empfaenger rauemt die Umgebung dann weg
