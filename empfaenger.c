@@ -68,14 +68,10 @@ int main (int argc, char* argv[])
     }
 	//while(data!= (int) EOF){
 	do{
-		
+        errno = 0;
 		if((data=do_readSM())==EXIT_FAILURE){
 		
-			if(errno == ENFILE) gotanerror("ERROR Too many shared memory objects are currently open in the system");
-			if(errno == EEXIST) gotanerror("ERROR O_CREAT and O_EXCL are set and the named shared memory object already exists.");
-			if(errno == EMFILE) gotanerror("ERROR Too many file descriptors are currently in use by this process.");
-			if(errno == EACCES) gotanerror("ERROR The shared memory object exists and the permissions specified by oflag are denied,");
-        
+            
 			gotanerror("ERROR reading from Shared Memory");
             do_cleanup();
 			return EXIT_FAILURE;
@@ -89,40 +85,20 @@ int main (int argc, char* argv[])
 				return EXIT_FAILURE;		
 			}
 		}
-	}while(data!= EOF);
+	}while(data != EOF);
 	//}
 	/*----Eigentliche Verarbeitung----*/
-	/*
-	while(int data = funktion die noch wer schreiben muss und zeichenweise aus dem shared memory liest)!=EOF{
-	do{
-	
-	// Fehlerbehandlung?
-		if((data = do_readSM())==EXIT_FAILURE){
-			do_cleanup();
-			return EXIT_FAILURE;
-		}
-	// Ausgabe nach stdout
-	//TODO: Fehlerbehandlung vollstaendig?
-		if(fputc(data, stdout)==EOF){
-			if(ferror(stdout)!=0)
-			{ 
-				do_cleanup();
-				return EXIT_FAILURE;		
-			}
-		}
-	
-	}while(data!=EOF);
-	*/
+
+    
 	if (fflush(stdout) == EOF)
 	{
 		gotanerror("ERROR fflush");
 		return EXIT_FAILURE; 
 	}
-	// Semaphore und Shared Memory wegräumen
 	
-	
-	//fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error");	//damits kompiliert (FILENAME UNUSED)
-	return do_cleanup();;
+    do_cleanup();
+    
+    return 0;
 }
 	
 /*

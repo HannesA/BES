@@ -52,8 +52,8 @@
 	
 	/*Shared Memory einbinden*/
 	if (do_attachSM(1) != 0) return EXIT_FAILURE; /*access_mode == 1 --> r&w sonst read only*/
-	/*----Eigentliche Verarbeitung----*/
 	
+    /*----Eigentliche Verarbeitung----*/
 	do{
 		errno=0;
 		data = fgetc(stdin);
@@ -61,7 +61,7 @@
 		
 		if(ferror(stdin)!=0)
 		{
-			gotanerror("");
+			gotanerror("ERROR IN ferror()");
 			do_cleanup();
 			return EXIT_FAILURE;
 		}
@@ -75,9 +75,7 @@
 	}while(data !=  EOF);
 	//TODO: Errorhandling genug bzw an richtiger stelle?
 	return 0;
-	//Empfaenger rauemt die Umgebung dann weg
-	//fprintf(stderr, "Error in %s: %s\n", FILENAME, "fgetc() returned error"); //TODO: damits kompiliert (FILENAME UNUSED)
-	//return 0;
+
 }
 	
 /*

@@ -17,6 +17,9 @@
 /*
  * -------------------------------------------------------------- includes --
  */
+#include <time.h>
+
+
 #include <limits.h>
 #include <sys/shm.h>
 #include <getopt.h>
@@ -41,11 +44,10 @@
  * --------------------------------------------------------------- globals --
  */
 static unsigned long ringbuffer = 0;							//buffer - wird hinter -m beim programmaufruf angegeben
-char *FILENAME; 							//wird durch empfänger und sender gesetzt
+char *FILENAME;                                                 //wird durch empfaenger und sender gesetzt
 static int semid[2] = {-1, -1}; 								//Semaphoren für Write[0] und Read[1]
 static int shmid = -1;
 static int *shmptr = NULL;
-//static key_t key[2] = {getuid()* 1000, getuid() * 1000 + 1}; 	//key für die semaphoren
 static key_t key[2] = {-1, -1}; /*[0] = Sender, [1] = Empfaenger*/
 static key_t shmkey = -1;
 
@@ -53,13 +55,6 @@ static key_t shmkey = -1;
  * ------------------------------------------------------------ prototypes --
  */
 static void do_KeyInit(void);
-/*
-	Im Header:
-	int do_ringbuffersize(int argc, char const argv[]);
-	void do_semaphorinit(void);
-	int do_cleanup(void);
-	void gotanerror(char *message);
- */
 /*
  * ------------------------------------------------------------- functions --
  */
@@ -72,9 +67,11 @@ static void do_KeyInit(void);
  * \return void
  */
 
+
 static void do_KeyInit(void){
     int tmp = (int) getuid(); /*Manpage: "These Functions are always successful"*/
-    tmp *= 1000;
+    tmp *= 10000;
+    
     key[SENDERINDEX]=tmp+0;
     key[RECEIVERINDEX]=tmp+1;
     shmkey = tmp+2;
@@ -88,7 +85,7 @@ static void do_KeyInit(void){
  *
  * \return SHMMAX Value
  */
-static unsigned long get_shmmax(void)
+/*static unsigned long get_shmmax(void)
 {
     unsigned long shmmax;
     FILE *f = fopen(SHMMAX_SYS_FILE,"r");
@@ -104,7 +101,8 @@ static unsigned long get_shmmax(void)
     fclose(f);
 	
     return shmmax;
-}
+}*/
+ 
 /**
  *
  * \brief Holt die den SHMALL Wert -> Maximale Groesse eines Shared Memories
@@ -146,7 +144,6 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
 {
 	int optret = 0; //Retrun Value of getopt()
     char *endptr = NULL;
-    //int foundargments = 0;
     errno = 0;
     while((optret = getopt(argc, argv, "m:")) != -1){
         
@@ -156,7 +153,6 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
                 ringbuffer = strtoul(optarg, &endptr, 10);
                 if((errno == ERANGE || ringbuffer == ULONG_MAX || (*endptr != '\0') || (errno != 0 && ringbuffer <= 0)||ringbuffer<=0/*||ringbuffer>sizeof(size_t)*/))
                 {
-                    //if (ringbuffer>sizeof(size_t)) printf("Usage: ERROR");
                     gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENT");
                     return -1;
                 }
@@ -188,11 +184,8 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
         }
         
     }
-	//nur zum kompilieren
-	if(get_shmmax()){errno=0;}
-	
-    
-    gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG OPTION");
+
+    gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> FATAL ERROR WHEN GETTING RINGBUFFERSIZE!!");
     return -1;
 	
 }
@@ -304,34 +297,39 @@ int do_attachSM(int access_mode)
 int do_cleanup(void)//TODO: Return Wert notwendig?
 {
     int tmp_counter = 0;
+    
+	
+    /*Blende SHM Adressbreich aus*/
+    if(shmptr != NULL){
+        if (shmdt(shmptr) == -1){
+            gotanerror("ERROR WHILE HIDING SHARED MEMORY SEGMENT");
+            return EXIT_FAILURE;
+        }
+    }
+    
+    /*Entferne Shared Memory*/
+    if (shmid != -1){
+        if (shmctl(shmid, IPC_RMID, NULL) == -1){
+            gotanerror("ERROR WHILE REMOVING SHARED MEMORY SEGMENT");
+            return EXIT_FAILURE;
+        }
+    }
+    
     /*Semaphoren wegrauemen*/
-	//if(semid[0]!=-1||semid[1]!=-1){
-		for (tmp_counter = 0; tmp_counter<2 ; tmp_counter++){
-			
-				if (semrm(semid[tmp_counter]) == -1) {
-					gotanerror("ERROR WHILE REMOVING SEMAPHOR");
-					return EXIT_FAILURE;
-				}
-				semid[tmp_counter] = -1;
-			
-			//return EXIT_FAILURE; //damits kompiliert?
-		}
-	//}
-    //if(shmptr!=NULL || shmid != -1){
-		/*Blende SHM Adressbreich aus*/
-		if (shmdt(shmptr) == -1){
-			gotanerror("ERROR WHILE HIDING SHARED MEMORY SEGMENT");
-			return EXIT_FAILURE;
-		}
-		
-		/*Entferne Shared Memory*/
-		if (shmctl(shmid, IPC_RMID, NULL) == 1){
-			gotanerror("ERROR WHILE REMOVING SHARED MEMORY SEGMENT");
-			return EXIT_FAILURE;
-		}
-		shmid = -1;
-		shmptr = NULL;
-    //}
+    
+    for (tmp_counter = 0; tmp_counter<2 ; tmp_counter++){
+        if(semid[tmp_counter] != -1){
+            if (semrm(semid[tmp_counter]) == -1) {
+                gotanerror("ERROR WHILE REMOVING SEMAPHOR");
+                return EXIT_FAILURE;
+            }
+        semid[tmp_counter] = -1;
+        }
+        
+    }
+    shmid = -1;
+    shmptr = NULL;
+    
     return 0;
 }
 
@@ -394,24 +392,16 @@ int do_readSM(void){
     
     static int readIndex = 0;
     int data = 0;
+    errno = 0;
     
     while(P(semid[RECEIVERINDEX])==-1)
     {	
-        if(errno!= EINTR){
+        if(errno != EINTR){
 			gotanerror("ERROR P-ing Receiver-Semaphor");
 			do_cleanup();
 			return EXIT_FAILURE;
         }
-		if(errno!= ENFILE){
-			gotanerror("ERROR zuviele shareds offen");
-			do_cleanup();
-			return EXIT_FAILURE;
-        }
-		if(errno!= EEXIST){
-			gotanerror("ERROR existiert");
-			do_cleanup();
-			return EXIT_FAILURE;
-        }
+		
 		errno = 0;
     }
     /*Critical Region*/
@@ -419,10 +409,11 @@ int do_readSM(void){
     
     readIndex++;
     readIndex%=ringbuffer;
+    errno = 0;
     
     while(V(semid[SENDERINDEX])==-1)
     {
-        if(errno!= EINTR){
+        if(errno != EINTR){
 			gotanerror("ERROR V-ing Sender-Semaphor");
 			do_cleanup();
 			return EXIT_FAILURE;
@@ -444,7 +435,7 @@ int do_readSM(void){
  *
  */	
 void gotanerror(char *message)
-{																	/*Kein Fehlercode in errno*/
+{   /*Kein Fehlercode in errno*/
     if(errno == 0) fprintf(stderr,"%s: %s\n", message, FILENAME);
     /*Wenn Fehlercode in errno dann Ausgabe inkl. genauerer Fehlerinformation*/
     else fprintf(stderr,"%s: FAILURE:%s, %s\n", message, strerror(errno), FILENAME);
