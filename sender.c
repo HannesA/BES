@@ -20,7 +20,7 @@
  */
 #include <errno.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string.h>//TODO: Notwendigkeit aller Includes prüfen
 #include <stdio.h>
 #include <unistd.h>
 #include "sharedfile.h"
@@ -67,12 +67,16 @@
 		}
 		
 		if(do_writeSM(data)==EXIT_FAILURE){
+			
 			gotanerror("ERROR Writing to Shared Memory");
 			return EXIT_FAILURE;
 		}
-		//printf("%c",data);
+		
 		
 	}while(data !=  EOF);
+	
+	//TODO: Detach vom Shared Memory
+	
 	//TODO: Errorhandling genug bzw an richtiger stelle?
 	return 0;
 

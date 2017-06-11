@@ -206,14 +206,14 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
  */
 int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im empfänger)*/
 {
-    unsigned long startbuffer = ringbuffer;
+    unsigned int startbuffer = ringbuffer;
     int i = 0;
     
     do_KeyInit(); //Hier werden die Keys wirklich initialisiert
     
     for(i = 0; i < 2; i++){
         
-        if(((semid[i] = seminit(key[i], 0660, startbuffer)) == -1)){
+        if(((semid[i] = seminit(key[i], 0660, (unsigned int) startbuffer)) == -1)){
             
             if(errno == EEXIST){
                 
@@ -272,7 +272,7 @@ int do_sharedmemory(void)
 int do_attachSM(int access_mode)
 {
 	shmptr = shmat(shmid, NULL, (access_mode == 1 ? 0 : SHM_RDONLY)); /*access_mode == 1 --> r&w sonst read only*/
-    if(shmptr == (int *) -1)
+    if(shmptr ==  -1)
     {
         gotanerror("ERROR WHILE ATTACHING SHARED MEMORY");
         do_cleanup();
@@ -352,6 +352,7 @@ int do_writeSM(int data){
     while(P(semid[SENDERINDEX])== -1)
     {
         if(errno!= EINTR){
+			
 			gotanerror("ERROR P-ing Sender-Semaphor");
 			do_cleanup();
 			return EXIT_FAILURE;
@@ -362,19 +363,20 @@ int do_writeSM(int data){
     /*Critical Region*/
     
     shmptr[senderIndex] = data;
-    senderIndex++;
-    senderIndex%=ringbuffer;
+    
     
     while(V(semid[RECEIVERINDEX])==-1)
     {
         if(errno!= EINTR){
+			
 			gotanerror("ERROR V-ing Receiver-Semaphor");
 			do_cleanup();
 			return EXIT_FAILURE;
         }
 		errno = 0;
     }
-    
+    senderIndex++;
+    senderIndex%=ringbuffer;
     
     return 0;
 }
@@ -397,6 +399,7 @@ int do_readSM(void){
     while(P(semid[RECEIVERINDEX])==-1)
     {	
         if(errno != EINTR){
+			
 			gotanerror("ERROR P-ing Receiver-Semaphor");
 			do_cleanup();
 			return EXIT_FAILURE;
@@ -414,6 +417,7 @@ int do_readSM(void){
     while(V(semid[SENDERINDEX])==-1)
     {
         if(errno != EINTR){
+			
 			gotanerror("ERROR V-ing Sender-Semaphor");
 			do_cleanup();
 			return EXIT_FAILURE;

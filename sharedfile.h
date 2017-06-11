@@ -34,7 +34,7 @@
 /*
  * --------------------------------------------------------------- globals --
  */
-//Wirklich sinnvoll?
+
 extern char *FILENAME; //extern weils im sharedfile.c definiert und in den empfänger und sender c files initialisiert wird
  
 /*
@@ -50,7 +50,7 @@ int do_attachSM(int access_mode);
 int do_writeSM(int data);
 int do_readSM(void);
 
-//Was braucht man hier noch??
+//TODO Was braucht man hier noch??
 
 
 #endif
