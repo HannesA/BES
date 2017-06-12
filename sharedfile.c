@@ -272,7 +272,7 @@ int do_sharedmemory(void)
 int do_attachSM(int access_mode)
 {
 	shmptr = shmat(shmid, NULL, (access_mode == 1 ? 0 : SHM_RDONLY)); /*access_mode == 1 --> r&w sonst read only*/
-    if(shmptr ==  -1)
+    if(shmptr == (int *) -1)
     {
         gotanerror("ERROR WHILE ATTACHING SHARED MEMORY");
         do_cleanup();
@@ -364,11 +364,13 @@ int do_writeSM(int data){
     
     shmptr[senderIndex] = data;
     
-    
     while(V(semid[RECEIVERINDEX])==-1)
     {
         if(errno!= EINTR){
-			
+			if(errno == ENFILE) gotanerror("ERROR Too many shared memory objects are currently open in the system");
+			if(errno == EEXIST) gotanerror("ERROR O_CREAT and O_EXCL are set and the named shared memory object already exists.");
+			if(errno == EMFILE) gotanerror("ERROR Too many file descriptors are currently in use by this process.");
+			if(errno == EACCES) gotanerror("ERROR The shared memory object exists and the permissions specified by oflag are denied,");
 			gotanerror("ERROR V-ing Receiver-Semaphor");
 			do_cleanup();
 			return EXIT_FAILURE;
@@ -397,30 +399,35 @@ int do_readSM(void){
     errno = 0;
     
     while(P(semid[RECEIVERINDEX])==-1)
-    {	
+    {	if(errno == ENFILE) gotanerror("ERROR Too many shared memory objects are currently open in the system");
+		if(errno == EEXIST) gotanerror("ERROR O_CREAT and O_EXCL are set and the named shared memory object already exists.");
+		if(errno == EMFILE) gotanerror("ERROR Too many file descriptors are currently in use by this process.");
+		if(errno == EACCES) gotanerror("ERROR The shared memory object exists and the permissions specified by oflag are denied,");
         if(errno != EINTR){
 			
 			gotanerror("ERROR P-ing Receiver-Semaphor");
-			do_cleanup();
-			return EXIT_FAILURE;
+			//do_cleanup();
+			return -2;
         }
 		
 		errno = 0;
     }
     /*Critical Region*/
     data = shmptr[readIndex];
-    
     readIndex++;
     readIndex%=ringbuffer;
     errno = 0;
     
     while(V(semid[SENDERINDEX])==-1)
-    {
+    {	if(errno == ENFILE) gotanerror("ERROR Too many shared memory objects are currently open in the system");
+			if(errno == EEXIST) gotanerror("ERROR O_CREAT and O_EXCL are set and the named shared memory object already exists.");
+			if(errno == EMFILE) gotanerror("ERROR Too many file descriptors are currently in use by this process.");
+			if(errno == EACCES) gotanerror("ERROR The shared memory object exists and the permissions specified by oflag are denied,");
         if(errno != EINTR){
 			
 			gotanerror("ERROR V-ing Sender-Semaphor");
-			do_cleanup();
-			return EXIT_FAILURE;
+			//do_cleanup();
+			return -2;
         }
 		errno = 0;
     }

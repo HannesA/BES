@@ -70,7 +70,7 @@ int main (int argc, char* argv[])
 			return EXIT_FAILURE;
 		}
         errno = 0;
-		if((data=do_readSM())==EXIT_FAILURE){
+		if((data=do_readSM())==-2){
 			
             if(errno == ENFILE) gotanerror("ERROR Too many shared memory objects are currently open in the system");
 			if(errno == EEXIST) gotanerror("ERROR O_CREAT and O_EXCL are set and the named shared memory object already exists.");
