@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  *
- * @date 2017/06/02
+ * @date 2017/06/12
  *
- * @version 0.2
+ * @version 0.9
  *
  *
  */
@@ -45,7 +45,7 @@
  */
 static unsigned long ringbuffer = 0;							//buffer - wird hinter -m beim programmaufruf angegeben
 char *FILENAME;                                                 //wird durch empfaenger und sender gesetzt
-static int semid[2] = {-1, -1}; 								//Semaphoren für Write[0] und Read[1]
+static int semid[2] = {-1, -1}; 								//Semaphoren fuer Write[0] und Read[1]
 static int shmid = -1;
 static int *shmptr = NULL;
 static key_t key[2] = {-1, -1}; /*[0] = Sender, [1] = Empfaenger*/
@@ -62,7 +62,7 @@ static void do_KeyInit(void);
  *
  * \brief Initialisiert die Keys abhaengig vom Aufrufer
  *
- * \param void
+ * 
  *
  * \return void
  */
@@ -81,7 +81,7 @@ static void do_KeyInit(void){
  *
  * \brief Holt die den SHMMAX Wert
  *
- * \param void
+ * 
  *
  * \return SHMMAX Value
  */
@@ -107,7 +107,6 @@ static void do_KeyInit(void){
  *
  * \brief Holt die den SHMALL Wert -> Maximale Groesse eines Shared Memories
  *
- * \param void
  *
  * \return SHMALL Value
  */
@@ -194,17 +193,17 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
 
 /**
  *
- * \brief legt semaphor für lese & schreibvorgang an
+ * \brief legt semaphor fuer lese & schreibvorgang an
  *	lesesemaphor wird im 2. schleifendurchlauf auf 0 gesetzt
  *
- * \param void
+ * 
  *
  * \return Integer
  * \retval -1 im Fehlerfall
  * \retval 0 wenn erfolgreich
  *
  */
-int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im empfänger)*/
+int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im empfaenger)*/
 {
     unsigned int startbuffer = ringbuffer;
     int i = 0;
@@ -240,7 +239,7 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
  *
  * \brief Legt den Shared Memory an
  *
- * \param void
+ * 
  *
  * \return int
  * \retval 0 wenn erfolgreich
@@ -249,7 +248,7 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
  */
 int do_sharedmemory(void)
 {
-    if((shmid = shmget(shmkey,sizeof(int)*ringbuffer, 0660|IPC_CREAT)) == -1)  // eröffne den shared memory mit rechten 0660
+    if((shmid = shmget(shmkey,sizeof(int)*ringbuffer, 0660|IPC_CREAT)) == -1)  // eroeffne den shared memory mit rechten 0660
     {
         gotanerror("ERROR WHILE GETTING SHARED MEMORY");
         do_cleanup();
@@ -288,7 +287,7 @@ int do_attachSM(int access_mode)
  *
  * \brief
  *
- * \param void
+ * 
  *
  * \return int
  * \retval EXIT_FAILURE im Fehlerfall
@@ -367,10 +366,6 @@ int do_writeSM(int data){
     while(V(semid[RECEIVERINDEX])==-1)
     {
         if(errno!= EINTR){
-			if(errno == ENFILE) gotanerror("ERROR Too many shared memory objects are currently open in the system");
-			if(errno == EEXIST) gotanerror("ERROR O_CREAT and O_EXCL are set and the named shared memory object already exists.");
-			if(errno == EMFILE) gotanerror("ERROR Too many file descriptors are currently in use by this process.");
-			if(errno == EACCES) gotanerror("ERROR The shared memory object exists and the permissions specified by oflag are denied,");
 			gotanerror("ERROR V-ing Receiver-Semaphor");
 			do_cleanup();
 			return EXIT_FAILURE;
@@ -399,12 +394,8 @@ int do_readSM(void){
     errno = 0;
     
     while(P(semid[RECEIVERINDEX])==-1)
-    {	if(errno == ENFILE) gotanerror("ERROR Too many shared memory objects are currently open in the system");
-		if(errno == EEXIST) gotanerror("ERROR O_CREAT and O_EXCL are set and the named shared memory object already exists.");
-		if(errno == EMFILE) gotanerror("ERROR Too many file descriptors are currently in use by this process.");
-		if(errno == EACCES) gotanerror("ERROR The shared memory object exists and the permissions specified by oflag are denied,");
-        if(errno != EINTR){
-			
+    {	if(errno != EINTR){
+			//TODO: Cleanup raus?
 			gotanerror("ERROR P-ing Receiver-Semaphor");
 			//do_cleanup();
 			return -2;
@@ -419,13 +410,11 @@ int do_readSM(void){
     errno = 0;
     
     while(V(semid[SENDERINDEX])==-1)
-    {	if(errno == ENFILE) gotanerror("ERROR Too many shared memory objects are currently open in the system");
-			if(errno == EEXIST) gotanerror("ERROR O_CREAT and O_EXCL are set and the named shared memory object already exists.");
-			if(errno == EMFILE) gotanerror("ERROR Too many file descriptors are currently in use by this process.");
-			if(errno == EACCES) gotanerror("ERROR The shared memory object exists and the permissions specified by oflag are denied,");
+    {	
         if(errno != EINTR){
 			
 			gotanerror("ERROR V-ing Sender-Semaphor");
+			//TODO: Cleanup raus?
 			//do_cleanup();
 			return -2;
         }

@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/06/02
+ * @date 2017/06/12
  *
- * @version 0.2
+ * @version 0.9
  *
  *
  */
@@ -35,7 +35,7 @@
  * --------------------------------------------------------------- globals --
  */
 
-extern char *FILENAME; //extern weils im sharedfile.c definiert und in den empfänger und sender c files initialisiert wird
+extern char *FILENAME; //extern weils im sharedfile.c definiert und in den empfaenger und sender c files initialisiert wird
  
 /*
  * ------------------------------------------------------------- functions --
