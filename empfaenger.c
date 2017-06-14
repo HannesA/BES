@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/06/02
+ * @date 2017/06/16
  *
- * @version 0.2
+ * @version 1
  *
  *
  */
@@ -20,12 +20,8 @@
  */
 
 
+//string, stdio, errno, unistd, stdlib im header
 
-#include <errno.h>
-#include <stdlib.h>//TODO: Notwendigkeit aller Includes prüfen
-#include <string.h>
-#include <stdio.h>
-#include <unistd.h>
 #include "sharedfile.h"
 
 /*
@@ -43,7 +39,14 @@
  */
 	
 
-
+/**
+ *
+ * \brief Main Entry empaenger.c
+ *
+ * \param int argc, char* argv[]
+ *
+ * \return 0 bei Erfolg und 1 bei error
+ */
 
 int main (int argc, char* argv[])
 {
@@ -70,7 +73,7 @@ int main (int argc, char* argv[])
 			return EXIT_FAILURE;
 		}
         errno = 0;
-		if((data=do_readSM())==EXIT_FAILURE){
+		if((data=do_readSM())==-2){
 			
             if(errno == ENFILE) gotanerror("ERROR Too many shared memory objects are currently open in the system");
 			if(errno == EEXIST) gotanerror("ERROR O_CREAT and O_EXCL are set and the named shared memory object already exists.");

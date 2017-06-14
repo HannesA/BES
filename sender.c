@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/06/02
+ * @date 2017/06/16
  *
- * @version 0.2
+ * @version 1
  *
  *
  */
@@ -18,11 +18,8 @@
 /*
  * -------------------------------------------------------------- includes --
  */
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>//TODO: Notwendigkeit aller Includes prüfen
-#include <stdio.h>
-#include <unistd.h>
+//string, stdio, errno, unistd, stdlib im header
+
 #include "sharedfile.h"
 /*
  * --------------------------------------------------------------- defines --
@@ -37,6 +34,14 @@
 
 
 
+/**
+ *
+ * \brief Main Entry sender.c
+ *
+ * \param int argc, char* argv[]
+ *
+ * \return 0 bei Erfolg und 1 bei error
+ */
  
  int main (int argc, char* argv[])
 {
@@ -74,9 +79,7 @@
 		
 		
 	}while(data !=  EOF);
-	
-	//TODO: Detach vom Shared Memory
-	
+
 	//TODO: Errorhandling genug bzw an richtiger stelle?
 	return 0;
 

@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/06/02
+ * @date 2017/06/16
  *
- * @version 0.2
+ * @version 1
  *
  *
  */
@@ -27,6 +27,11 @@
  * -------------------------------------------------------------- includes --
  */
 
+#include <string.h>
+#include <stdio.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 
 
@@ -50,7 +55,6 @@ int do_attachSM(int access_mode);
 int do_writeSM(int data);
 int do_readSM(void);
 
-//TODO Was braucht man hier noch??
 
 
 #endif

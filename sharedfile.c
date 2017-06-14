@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  *
- * @date 2017/06/02
+ * @date 2017/06/16
  *
- * @version 0.2
+ * @version 1
  *
  *
  */
@@ -18,21 +18,16 @@
  * -------------------------------------------------------------- includes --
  */
 #include <time.h>
-
+//string, stdio, errno, unistd, stdlib im header
 
 #include <limits.h>
 #include <sys/shm.h>
 #include <getopt.h>
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/ipc.h>
 #include <sys/types.h>
 #include <sem182.h>
 #include "sharedfile.h"
-#include <stdint.h> //Maximum Int size TODO Remove?
+#include <stdint.h>
 /*
  * --------------------------------------------------------------- defines --
  */
@@ -66,8 +61,6 @@ static void do_KeyInit(void);
  *
  * \return void
  */
-
-
 static void do_KeyInit(void){
     int tmp = (int) getuid(); /*Manpage: "These Functions are always successful"*/
     tmp *= 10000;
@@ -77,32 +70,6 @@ static void do_KeyInit(void){
     shmkey = tmp+2;
 }
 
-/**
- *
- * \brief Holt die den SHMMAX Wert
- *
- * \param void
- *
- * \return SHMMAX Value
- */
-/*static unsigned long get_shmmax(void)
-{
-    unsigned long shmmax;
-    FILE *f = fopen(SHMMAX_SYS_FILE,"r");
-    if(!f){
-        gotanerror("Unable to read /proc/sys/shmmax");
-        return -1;//errorhanling needed
-    }
-    if(fscanf(f,"%lu", &shmmax) !=1){
-        gotanerror("Unable to read /proc/sys/shmmax");
-        fclose(f);
-        return -1;//errorhandling needed
-    }
-    fclose(f);
-	
-    return shmmax;
-}*/
- 
 /**
  *
  * \brief Holt die den SHMALL Wert -> Maximale Groesse eines Shared Memories
@@ -117,12 +84,12 @@ static unsigned long get_shmall(void)
     FILE *f = fopen(SHMALL_SYS_FILE,"r");
     if(!f){
         gotanerror("Unable to read /proc/sys/shmall");
-        return -1;//errorhanling needed
+        return -1;
     }
     if(fscanf(f,"%lu", &shmall) !=1){
         gotanerror("Unable to read /proc/sys/shmall");
         fclose(f);
-        return -1;//errorhandling needed
+        return -1;
     }
     fclose(f);
 	
@@ -208,7 +175,8 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
 {
     unsigned int startbuffer = ringbuffer;
     int i = 0;
-    
+    errno = 0;
+	
     do_KeyInit(); //Hier werden die Keys wirklich initialisiert
     
     for(i = 0; i < 2; i++){
@@ -219,13 +187,13 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
                 
                 if((semid[i] = semgrab(key[i])) == -1){
                     
-                    gotanerror("Usage: ERROR WHILE GRABING SEMAPHOR - already existing, but not grabable");
+                    gotanerror("ERROR WHILE GRABING SEMAPHOR - already existing, but not grabable");
                     do_cleanup();
                     return EXIT_FAILURE;
                 }
                 
             }else {
-                //gotanerror("Usage: ERROR WHILE INITIALISING SEMAPHOR - no EEXIST message");
+                gotanerror("ERROR WHILE INITIALISING SEMAPHOR - no EEXIST message");
                 do_cleanup();
                 return EXIT_FAILURE;
             }
@@ -272,7 +240,7 @@ int do_sharedmemory(void)
 int do_attachSM(int access_mode)
 {
 	shmptr = shmat(shmid, NULL, (access_mode == 1 ? 0 : SHM_RDONLY)); /*access_mode == 1 --> r&w sonst read only*/
-    if(shmptr ==  -1)
+    if(shmptr ==  (int*)-1)
     {
         gotanerror("ERROR WHILE ATTACHING SHARED MEMORY");
         do_cleanup();
@@ -348,7 +316,8 @@ int do_cleanup(void)//TODO: Return Wert notwendig?
 int do_writeSM(int data){
     
     static int senderIndex = 0;
-    
+    errno = 0;
+	
     while(P(semid[SENDERINDEX])== -1)
     {
         if(errno!= EINTR){
@@ -402,7 +371,7 @@ int do_readSM(void){
 			
 			gotanerror("ERROR P-ing Receiver-Semaphor");
 			do_cleanup();
-			return EXIT_FAILURE;
+			return -2;
         }
 		
 		errno = 0;
@@ -420,7 +389,7 @@ int do_readSM(void){
 			
 			gotanerror("ERROR V-ing Sender-Semaphor");
 			do_cleanup();
-			return EXIT_FAILURE;
+			return -2;
         }
 		errno = 0;
     }
