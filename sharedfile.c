@@ -137,7 +137,7 @@ int do_ringbuffersize(int argc, char* const argv[])
                             gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - BUFFER SIZE TOO LARGE");
                             return -1;
                         }
-                        return ringbuffer;/*Alle Checks bestanden*/
+                        return 0;/*Alle Checks bestanden*/
                     }
                 }
                 
@@ -173,7 +173,7 @@ int do_ringbuffersize(int argc, char* const argv[])
  */
 int do_semaphorinit(void)
 {
-    unsigned int startbuffer = ringbuffer;
+    unsigned long startbuffer = ringbuffer;
     int i = 0;
     errno = 0;
 	
