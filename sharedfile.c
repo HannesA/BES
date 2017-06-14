@@ -8,18 +8,18 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  *
- * @date 2017/06/16
+ * @date 2017/06/14
  *
- * @version 1
+ * @version 1.0
  *
  *
  */
 /*
  * -------------------------------------------------------------- includes --
  */
-#include <time.h>
-//string, stdio, errno, unistd, stdlib im header
-
+#include <time.h> //TODO: Wofuer brauchen wir time.h??
+/*string, stdio, errno, unistd, stdlib im header*/
+#include <stdint.h> //TODO: Sind die alle notwendig??
 #include <limits.h>
 #include <sys/shm.h>
 #include <getopt.h>
@@ -27,21 +27,23 @@
 #include <sys/types.h>
 #include <sem182.h>
 #include "sharedfile.h"
-#include <stdint.h>
+
 /*
  * --------------------------------------------------------------- defines --
  */
 #define SENDERINDEX 0
 #define RECEIVERINDEX 1
-#define SHMMAX_SYS_FILE "/proc/sys/kernel/shmmax"
+#define SHMMAX_SYS_FILE "/proc/sys/kernel/shmmax" //TODO nie benutzt, raus?
 #define SHMALL_SYS_FILE "/proc/sys/kernel/shmall"
+#define RIGHTS  0660
 /*
  * --------------------------------------------------------------- globals --
  */
-static unsigned long ringbuffer = 0;							//buffer - wird hinter -m beim programmaufruf angegeben
-char *FILENAME;                                                 //wird durch empfaenger und sender gesetzt
-static int semid[2] = {-1, -1}; 								//Semaphoren für Write[0] und Read[1]
-static int shmid = -1;
+char *FILENAME; /*wird durch Empfaenger und Sender gesetzt*/ 
+
+static unsigned long ringbuffer = 0;
+static int semid[2] = {-1, -1}; /*Semaphoren für Write-[0] und Read-[1]*/
+static int shmid = -1; 
 static int *shmptr = NULL;
 static key_t key[2] = {-1, -1}; /*[0] = Sender, [1] = Empfaenger*/
 static key_t shmkey = -1;
@@ -50,21 +52,21 @@ static key_t shmkey = -1;
  * ------------------------------------------------------------ prototypes --
  */
 static void do_KeyInit(void);
+static unsigned long get_shmall(void);
 /*
  * ------------------------------------------------------------- functions --
  */
+ 
 /**
  *
- * \brief Initialisiert die Keys abhaengig vom Aufrufer
+ * \brief Initialisiert die Keys abhaengig von der uid des Aufrufers
  *
- * \param void
  *
  * \return void
  */
 static void do_KeyInit(void){
     int tmp = (int) getuid(); /*Manpage: "These Functions are always successful"*/
     tmp *= 10000;
-    
     key[SENDERINDEX]=tmp+0;
     key[RECEIVERINDEX]=tmp+1;
     shmkey = tmp+2;
@@ -72,7 +74,7 @@ static void do_KeyInit(void){
 
 /**
  *
- * \brief Holt die den SHMALL Wert -> Maximale Groesse eines Shared Memories
+ * \brief Holt den SHMALL Wert -> Maximale Groesse eines Shared Memories
  *
  * \param void
  *
@@ -107,9 +109,9 @@ static unsigned long get_shmall(void)
  * \retval -1 im Fehlerfall
  *
  */
-int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter -m*/
+int do_ringbuffersize(int argc, char* const argv[]) 
 {
-	int optret = 0; //Retrun Value of getopt()
+	int optret = 0; /*Return Value of getopt()*/
     char *endptr = NULL;
     errno = 0;
     while((optret = getopt(argc, argv, "m:")) != -1){
@@ -118,7 +120,7 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
         switch (optret){
             case 'm':
                 ringbuffer = strtoul(optarg, &endptr, 10);
-                if((errno == ERANGE || ringbuffer == ULONG_MAX || (*endptr != '\0') || (errno != 0 && ringbuffer <= 0)||ringbuffer<=0/*||ringbuffer>sizeof(size_t)*/))
+                if((errno == ERANGE || ringbuffer == ULONG_MAX || (*endptr != '\0') || (errno != 0 && ringbuffer <= 0)||ringbuffer<=0))
                 {
                     gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - WRONG ARGUMENT");
                     return -1;
@@ -135,7 +137,7 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
                             gotanerror("Usage: ./PROGRAMM -m <buffersize 1 to x> - BUFFER SIZE TOO LARGE");
                             return -1;
                         }
-                        return ringbuffer;
+                        return ringbuffer;/*Alle Checks bestanden*/
                     }
                 }
                 
@@ -161,27 +163,25 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
 
 /**
  *
- * \brief legt semaphor für lese & schreibvorgang an
- *	lesesemaphor wird im 2. schleifendurchlauf auf 0 gesetzt
- *
- * \param void
+ * \brief legt semaphor fuer lese & schreibvorgang an
+ *	Lesesemaphor wird im 2. Schleifendurchlauf auf 0 gesetzt
  *
  * \return Integer
  * \retval -1 im Fehlerfall
  * \retval 0 wenn erfolgreich
  *
  */
-int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im empfänger)*/
+int do_semaphorinit(void)
 {
     unsigned int startbuffer = ringbuffer;
     int i = 0;
     errno = 0;
 	
-    do_KeyInit(); //Hier werden die Keys wirklich initialisiert
+    do_KeyInit(); /*Hier werden die Keys initialisiert*/
     
     for(i = 0; i < 2; i++){
         
-        if(((semid[i] = seminit(key[i], 0660, (unsigned int) startbuffer)) == -1)){
+        if(((semid[i] = seminit(key[i], RIGHTS, (unsigned int) startbuffer)) == -1)){
             
             if(errno == EEXIST){
                 
@@ -208,8 +208,6 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
  *
  * \brief Legt den Shared Memory an
  *
- * \param void
- *
  * \return int
  * \retval 0 wenn erfolgreich
  * \retval EXIT_FAILURE im Fehlerfall
@@ -217,7 +215,7 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
  */
 int do_sharedmemory(void)
 {
-    if((shmid = shmget(shmkey,sizeof(int)*ringbuffer, 0660|IPC_CREAT)) == -1)  // eröffne den shared memory mit rechten 0660
+    if((shmid = shmget(shmkey,sizeof(int)*ringbuffer, RIGHTS|IPC_CREAT)) == -1)
     {
         gotanerror("ERROR WHILE GETTING SHARED MEMORY");
         do_cleanup();
@@ -230,7 +228,7 @@ int do_sharedmemory(void)
  *
  * \brief Bindet den Shared Memory ein
  *
- * \param access_mode steuert ob read & write oder read only Zugriff
+ * \param access_mode steuert ob read & write oder read_only Zugriff
  *
  * \return integer
  * \retval 0 wenn erfolgreich
@@ -256,18 +254,16 @@ int do_attachSM(int access_mode)
  *
  * \brief
  *
- * \param void
- *
  * \return int
  * \retval EXIT_FAILURE im Fehlerfall
  *
  */
-int do_cleanup(void)//TODO: Return Wert notwendig?
+int do_cleanup(void)//TODO: Return Wert notwendig? Wird nirgends abgefragt
 {
     int tmp_counter = 0;
     
 	
-    /*Blende SHM Adressbreich aus*/
+    /*Blende SHM Adressbereich aus*/
     if(shmptr != NULL){
         if (shmdt(shmptr) == -1){
             gotanerror("ERROR WHILE HIDING SHARED MEMORY SEGMENT");
@@ -381,8 +377,8 @@ int do_readSM(void){
     
     readIndex++;
     readIndex%=ringbuffer;
-    errno = 0;
-    
+   
+    /*Ende - Critical Region*/
     while(V(semid[SENDERINDEX])==-1)
     {
         if(errno != EINTR){
@@ -393,7 +389,6 @@ int do_readSM(void){
         }
 		errno = 0;
     }
-    
     
     return data;
 }

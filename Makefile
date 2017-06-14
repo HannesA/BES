@@ -8,9 +8,9 @@
 ## @author Daniel Scheidl <ic16b073@technikum-wien.at>
 ## @author Raphael Szabo <ic16b062@technikum-wien.at>
 ##
-## @date 2017/06/12
+## @date 2017/06/14
 ## 
-## @version 0.9
+## @version 1.0
 ##
 ##
 ##-------------------------------------------------------------------------------------------------
