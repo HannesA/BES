@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/06/12
+ * @date 2017/06/16
  *
- * @version 0.9
+ * @version 1
  *
  *
  */
@@ -18,11 +18,8 @@
 /*
  * -------------------------------------------------------------- includes --
  */
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>//TODO: Notwendigkeit aller Includes pruefen
-#include <stdio.h>
-#include <unistd.h>
+//string, stdio, errno, unistd, stdlib im header
+
 #include "sharedfile.h"
 /*
  * --------------------------------------------------------------- defines --
@@ -37,6 +34,14 @@
 
 
 
+/**
+ *
+ * \brief Main Entry sender.c
+ *
+ * \param int argc, char* argv[]
+ *
+ * \return 0 bei Erfolg und 1 bei error
+ */
  
  int main (int argc, char* argv[])
 {
@@ -57,7 +62,7 @@
 	do{
 		errno=0;
 		data = fgetc(stdin);
-		
+		/*Senden = in Shared Memory schreiben*/
 		
 		if(ferror(stdin)!=0)
 		{
@@ -65,7 +70,7 @@
 			do_cleanup();
 			return EXIT_FAILURE;
 		}
-		/*Senden = in Shared Memory schreiben*/
+		
 		if(do_writeSM(data)==EXIT_FAILURE){
 			
 			gotanerror("ERROR Writing to Shared Memory");
@@ -74,10 +79,8 @@
 		
 		
 	}while(data !=  EOF);
-	
-	//TODO: Detach vom Shared Memory?
-	
-	
+
+	//TODO: Errorhandling genug bzw an richtiger stelle?
 	return 0;
 
 }

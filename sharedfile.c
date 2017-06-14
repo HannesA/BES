@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  *
- * @date 2017/06/12
+ * @date 2017/06/16
  *
- * @version 0.9
+ * @version 1
  *
  *
  */
@@ -18,21 +18,16 @@
  * -------------------------------------------------------------- includes --
  */
 #include <time.h>
-
+//string, stdio, errno, unistd, stdlib im header
 
 #include <limits.h>
 #include <sys/shm.h>
 #include <getopt.h>
-#include <stdio.h>
-#include <errno.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/ipc.h>
 #include <sys/types.h>
 #include <sem182.h>
 #include "sharedfile.h"
-#include <stdint.h> //Maximum Int size TODO Remove?
+#include <stdint.h>
 /*
  * --------------------------------------------------------------- defines --
  */
@@ -45,7 +40,7 @@
  */
 static unsigned long ringbuffer = 0;							//buffer - wird hinter -m beim programmaufruf angegeben
 char *FILENAME;                                                 //wird durch empfaenger und sender gesetzt
-static int semid[2] = {-1, -1}; 								//Semaphoren fuer Write[0] und Read[1]
+static int semid[2] = {-1, -1}; 								//Semaphoren für Write[0] und Read[1]
 static int shmid = -1;
 static int *shmptr = NULL;
 static key_t key[2] = {-1, -1}; /*[0] = Sender, [1] = Empfaenger*/
@@ -62,12 +57,10 @@ static void do_KeyInit(void);
  *
  * \brief Initialisiert die Keys abhaengig vom Aufrufer
  *
- * 
+ * \param void
  *
  * \return void
  */
-
-
 static void do_KeyInit(void){
     int tmp = (int) getuid(); /*Manpage: "These Functions are always successful"*/
     tmp *= 10000;
@@ -79,34 +72,9 @@ static void do_KeyInit(void){
 
 /**
  *
- * \brief Holt die den SHMMAX Wert
- *
- * 
- *
- * \return SHMMAX Value
- */
-/*static unsigned long get_shmmax(void)
-{
-    unsigned long shmmax;
-    FILE *f = fopen(SHMMAX_SYS_FILE,"r");
-    if(!f){
-        gotanerror("Unable to read /proc/sys/shmmax");
-        return -1;//errorhanling needed
-    }
-    if(fscanf(f,"%lu", &shmmax) !=1){
-        gotanerror("Unable to read /proc/sys/shmmax");
-        fclose(f);
-        return -1;//errorhandling needed
-    }
-    fclose(f);
-	
-    return shmmax;
-}*/
- 
-/**
- *
  * \brief Holt die den SHMALL Wert -> Maximale Groesse eines Shared Memories
  *
+ * \param void
  *
  * \return SHMALL Value
  */
@@ -116,12 +84,12 @@ static unsigned long get_shmall(void)
     FILE *f = fopen(SHMALL_SYS_FILE,"r");
     if(!f){
         gotanerror("Unable to read /proc/sys/shmall");
-        return -1;//errorhanling needed
+        return -1;
     }
     if(fscanf(f,"%lu", &shmall) !=1){
         gotanerror("Unable to read /proc/sys/shmall");
         fclose(f);
-        return -1;//errorhandling needed
+        return -1;
     }
     fclose(f);
 	
@@ -193,21 +161,22 @@ int do_ringbuffersize(int argc, char* const argv[]) /*analysiert zeichen hinter 
 
 /**
  *
- * \brief legt semaphor fuer lese & schreibvorgang an
+ * \brief legt semaphor für lese & schreibvorgang an
  *	lesesemaphor wird im 2. schleifendurchlauf auf 0 gesetzt
  *
- * 
+ * \param void
  *
  * \return Integer
  * \retval -1 im Fehlerfall
  * \retval 0 wenn erfolgreich
  *
  */
-int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im empfaenger)*/
+int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im empfänger)*/
 {
     unsigned int startbuffer = ringbuffer;
     int i = 0;
-    
+    errno = 0;
+	
     do_KeyInit(); //Hier werden die Keys wirklich initialisiert
     
     for(i = 0; i < 2; i++){
@@ -218,13 +187,13 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
                 
                 if((semid[i] = semgrab(key[i])) == -1){
                     
-                    gotanerror("Usage: ERROR WHILE GRABING SEMAPHOR - already existing, but not grabable");
+                    gotanerror("ERROR WHILE GRABING SEMAPHOR - already existing, but not grabable");
                     do_cleanup();
                     return EXIT_FAILURE;
                 }
                 
             }else {
-                //gotanerror("Usage: ERROR WHILE INITIALISING SEMAPHOR - no EEXIST message");
+                gotanerror("ERROR WHILE INITIALISING SEMAPHOR - no EEXIST message");
                 do_cleanup();
                 return EXIT_FAILURE;
             }
@@ -239,7 +208,7 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
  *
  * \brief Legt den Shared Memory an
  *
- * 
+ * \param void
  *
  * \return int
  * \retval 0 wenn erfolgreich
@@ -248,7 +217,7 @@ int do_semaphorinit(void) /*initalisiert bzw. holt semaphor (geholt wird nur im 
  */
 int do_sharedmemory(void)
 {
-    if((shmid = shmget(shmkey,sizeof(int)*ringbuffer, 0660|IPC_CREAT)) == -1)  // eroeffne den shared memory mit rechten 0660
+    if((shmid = shmget(shmkey,sizeof(int)*ringbuffer, 0660|IPC_CREAT)) == -1)  // eröffne den shared memory mit rechten 0660
     {
         gotanerror("ERROR WHILE GETTING SHARED MEMORY");
         do_cleanup();
@@ -271,7 +240,7 @@ int do_sharedmemory(void)
 int do_attachSM(int access_mode)
 {
 	shmptr = shmat(shmid, NULL, (access_mode == 1 ? 0 : SHM_RDONLY)); /*access_mode == 1 --> r&w sonst read only*/
-    if(shmptr == (int *) -1)
+    if(shmptr ==  (int*)-1)
     {
         gotanerror("ERROR WHILE ATTACHING SHARED MEMORY");
         do_cleanup();
@@ -287,7 +256,7 @@ int do_attachSM(int access_mode)
  *
  * \brief
  *
- * 
+ * \param void
  *
  * \return int
  * \retval EXIT_FAILURE im Fehlerfall
@@ -347,7 +316,8 @@ int do_cleanup(void)//TODO: Return Wert notwendig?
 int do_writeSM(int data){
     
     static int senderIndex = 0;
-    
+    errno = 0;
+	
     while(P(semid[SENDERINDEX])== -1)
     {
         if(errno!= EINTR){
@@ -363,9 +333,11 @@ int do_writeSM(int data){
     
     shmptr[senderIndex] = data;
     
+    
     while(V(semid[RECEIVERINDEX])==-1)
     {
         if(errno!= EINTR){
+			
 			gotanerror("ERROR V-ing Receiver-Semaphor");
 			do_cleanup();
 			return EXIT_FAILURE;
@@ -394,10 +366,11 @@ int do_readSM(void){
     errno = 0;
     
     while(P(semid[RECEIVERINDEX])==-1)
-    {	if(errno != EINTR){
-			//TODO: Cleanup raus?
+    {	
+        if(errno != EINTR){
+			
 			gotanerror("ERROR P-ing Receiver-Semaphor");
-			//do_cleanup();
+			do_cleanup();
 			return -2;
         }
 		
@@ -405,17 +378,17 @@ int do_readSM(void){
     }
     /*Critical Region*/
     data = shmptr[readIndex];
+    
     readIndex++;
     readIndex%=ringbuffer;
     errno = 0;
     
     while(V(semid[SENDERINDEX])==-1)
-    {	
+    {
         if(errno != EINTR){
 			
 			gotanerror("ERROR V-ing Sender-Semaphor");
-			//TODO: Cleanup raus?
-			//do_cleanup();
+			do_cleanup();
 			return -2;
         }
 		errno = 0;

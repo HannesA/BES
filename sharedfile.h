@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/06/12
+ * @date 2017/06/16
  *
- * @version 0.9
+ * @version 1
  *
  *
  */
@@ -27,6 +27,11 @@
  * -------------------------------------------------------------- includes --
  */
 
+#include <string.h>
+#include <stdio.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 
 
@@ -35,7 +40,7 @@
  * --------------------------------------------------------------- globals --
  */
 
-extern char *FILENAME; //extern weils im sharedfile.c definiert und in den empfaenger und sender c files initialisiert wird
+extern char *FILENAME; //extern weils im sharedfile.c definiert und in den empfänger und sender c files initialisiert wird
  
 /*
  * ------------------------------------------------------------- functions --
@@ -50,7 +55,6 @@ int do_attachSM(int access_mode);
 int do_writeSM(int data);
 int do_readSM(void);
 
-//TODO Was braucht man hier noch??
 
 
 #endif
