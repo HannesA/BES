@@ -17,9 +17,8 @@
 /*
  * -------------------------------------------------------------- includes --
  */
-#include <time.h> //TODO: Wofuer brauchen wir time.h??
 /*string, stdio, errno, unistd, stdlib im header*/
-#include <stdint.h> //TODO: Sind die alle notwendig??
+#include <stdint.h>
 #include <limits.h>
 #include <sys/shm.h>
 #include <getopt.h>
@@ -33,7 +32,6 @@
  */
 #define SENDERINDEX 0
 #define RECEIVERINDEX 1
-#define SHMMAX_SYS_FILE "/proc/sys/kernel/shmmax" //TODO nie benutzt, raus?
 #define SHMALL_SYS_FILE "/proc/sys/kernel/shmall"
 #define RIGHTS  0660
 /*
