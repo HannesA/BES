@@ -18,17 +18,12 @@
 /*
  * -------------------------------------------------------------- includes --
  */
-
-
-//string, stdio, errno, unistd, stdlib im header
-
+/*string, stdio, errno, unistd, stdlib im header*/
 #include "sharedfile.h"
 
 /*
  * --------------------------------------------------------------- defines --
  */
-
-
 
 /*
  * --------------------------------------------------------------- globals --
@@ -41,30 +36,32 @@
 
 /**
  *
- * \brief Main Entry empaenger.c
+ * \brief Main Entry empaenger.c - Liest aus dem Shared Memory
  *
- * \param int argc, char* argv[]
+ * Liest aus dem Shared Memory bis er EOF erhaelt
  *
- * \return 0 bei Erfolg und 1 bei error
+ * \param int argc Argument Counter
+ * \param char* argv[] Argument Values
+ *
+ * \return 0 bei Erfolg
+ *
+ * \retval EXIT_FAILURE im Fehlerfall
  */
-
 int main (int argc, char* argv[])
 {
 	FILENAME = argv[0];
 	int data = -1;
 	
 	/*----Umgebung anlegen und einbinden----*/
-	if (do_ringbuffersize(argc, argv) == -1) return EXIT_FAILURE; /*EXIT_FAILURE gehört zur stdlib.h*/
+	if (do_ringbuffersize(argc, argv) == -1) return EXIT_FAILURE; 
 	
 	if (do_semaphorinit() != 0 ) return EXIT_FAILURE;
 	
 	if (do_sharedmemory() != 0) return EXIT_FAILURE;
 	
-	
 	if (do_attachSM(0) != 0) return EXIT_FAILURE; /*access_mode == 1 --> r&w sonst read only*/
 	
-	
-	//while(data!= (int) EOF){
+	/*----Eigentliche Verarbeitung----*/
 	do{
 		if (ferror(stdin))
 		{
@@ -75,15 +72,13 @@ int main (int argc, char* argv[])
         errno = 0;
 		if((data=do_readSM())==-2){
 			
-            if(errno == ENFILE) gotanerror("ERROR Too many shared memory objects are currently open in the system");
-			if(errno == EEXIST) gotanerror("ERROR O_CREAT and O_EXCL are set and the named shared memory object already exists.");
-			if(errno == EMFILE) gotanerror("ERROR Too many file descriptors are currently in use by this process.");
-			if(errno == EACCES) gotanerror("ERROR The shared memory object exists and the permissions specified by oflag are denied,");
 			gotanerror("ERROR reading from Shared Memory");
             do_cleanup();
 			return EXIT_FAILURE;
 		}
+		
 		if(data==EOF) break;
+		
 		if(putchar(data)==EOF){
 			if(ferror(stdout)!=0)
 			{ 
@@ -93,16 +88,13 @@ int main (int argc, char* argv[])
 			}
 		}
 	}while(data != EOF);
-	//}
-	/*----Eigentliche Verarbeitung----*/
-
     
-	if (fflush(stdout) == EOF)
-	{
+	if(fflush(stdout) == EOF)
+	{	do_cleanup();
 		gotanerror("ERROR fflush");
 		return EXIT_FAILURE; 
 	}
-	
+	/*----Umgebung wegraeumen----*/
     do_cleanup();
     
     return 0;

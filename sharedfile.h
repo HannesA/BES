@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/06/16
+ * @date 2017/06/14
  *
- * @version 1
+ * @version 1.0
  *
  *
  */
@@ -18,43 +18,34 @@
 /*
  * --------------------------------------------------------------- defines --
  */
-
- 
 #ifndef SHAREDFILE_H
 #define SHAREDFILE_H
  
 /*
  * -------------------------------------------------------------- includes --
  */
-
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
 
-
-
-
 /*
  * --------------------------------------------------------------- globals --
  */
-
-extern char *FILENAME; //extern weils im sharedfile.c definiert und in den empfänger und sender c files initialisiert wird
+extern char *FILENAME; /*Wird hier definiert und von Sender und Empfaenger gesetzt*/
  
 /*
- * ------------------------------------------------------------- functions --
+ * -------------------------------------------------------------prototypes--
  */
-
 int do_ringbuffersize(int argc, char* const argv[]);
 int do_semaphorinit(void);	
 int do_cleanup(void);
-void gotanerror(char *message);
 int do_sharedmemory(void);
 int do_attachSM(int access_mode); 
 int do_writeSM(int data);
 int do_readSM(void);
-
+void gotanerror(char *message);
 
 
 #endif
