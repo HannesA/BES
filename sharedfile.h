@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/06/14
+ * @date 2017/06/16
  *
- * @version 1.0
+ * @version Abgabe
  *
  *
  */
@@ -40,13 +40,12 @@ extern char *FILENAME; /*Wird hier definiert und von Sender und Empfaenger geset
  */
 int do_ringbuffersize(int argc, char* const argv[]);
 int do_semaphorinit(void);	
-int do_cleanup(void);
 int do_sharedmemory(void);
 int do_attachSM(int access_mode); 
 int do_writeSM(int data);
 int do_readSM(void);
 void gotanerror(char *message);
-
+void do_cleanup(void);
 
 #endif
 /*

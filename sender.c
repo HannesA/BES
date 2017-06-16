@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  * 
- * @date 2017/06/14
+ * @date 2017/06/16
  *
- * @version 1.0
+ * @version Abgabe
  *
  *
  */
@@ -36,8 +36,8 @@
  *
  * \brief Main Entry sender.c
  *
- * \param int argc Argument Counter
- * \param char* argv[] Argument Values
+ * \param argc Argument Counter
+ * \param argv[] Argument Values
  *
  * \return 0 bei Erfolg
  * \retval EXIT_FAILURE im Fehlerfall
@@ -65,7 +65,7 @@
 		
 		if(ferror(stdin)!=0)
 		{
-			gotanerror("ERROR IN ferror()");
+			gotanerror("ERROR in ferror()");
 			do_cleanup();
 			return EXIT_FAILURE;
 		}
@@ -78,8 +78,7 @@
 		
 		
 	}while(data !=  EOF);
-	//TODO: Shared Memory Detachen?
-	//TODO: Errorhandling genug bzw an richtiger stelle?
+	
 	return 0;
 
 }

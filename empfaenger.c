@@ -10,7 +10,7 @@
  * 
  * @date 2017/06/16
  *
- * @version 1
+ * @version Abgabe
  *
  *
  */
@@ -40,8 +40,8 @@
  *
  * Liest aus dem Shared Memory bis er EOF erhaelt
  *
- * \param int argc Argument Counter
- * \param char* argv[] Argument Values
+ * \param argc Argument Counter
+ * \param argv[] Argument Values
  *
  * \return 0 bei Erfolg
  *
@@ -63,13 +63,14 @@ int main (int argc, char* argv[])
 	
 	/*----Eigentliche Verarbeitung----*/
 	do{
+		errno = 0;
 		if (ferror(stdin))
 		{
 			gotanerror("ERROR in stdin");
 			do_cleanup();
 			return EXIT_FAILURE;
 		}
-        errno = 0;
+        
 		if((data=do_readSM())==-2){
 			
 			gotanerror("ERROR reading from Shared Memory");
@@ -91,7 +92,7 @@ int main (int argc, char* argv[])
     
 	if(fflush(stdout) == EOF)
 	{	do_cleanup();
-		gotanerror("ERROR fflush");
+		gotanerror("ERROR fflush-ing stdout");
 		return EXIT_FAILURE; 
 	}
 	/*----Umgebung wegraeumen----*/

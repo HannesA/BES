@@ -8,9 +8,9 @@
  * @author Daniel Scheidl <ic16b073@technikum-wien.at>
  * @author Raphael Szabo <ic16b062@technikum-wien.at>
  *
- * @date 2017/06/14
+ * @date 2017/06/16
  *
- * @version 1.0
+ * @version Abgabe
  *
  *
  */
@@ -74,7 +74,6 @@ static void do_KeyInit(void){
  *
  * \brief Holt den SHMALL Wert -> Maximale Groesse eines Shared Memories
  *
- * \param void
  *
  * \return SHMALL Value
  */
@@ -165,11 +164,11 @@ int do_ringbuffersize(int argc, char* const argv[])
 
 /**
  *
- * \brief legt semaphor fuer lese & schreibvorgang an
+ * \brief legt Semaphor fuer Lese & Schreibvorgang an
  *	Lesesemaphor wird im 2. Schleifendurchlauf auf 0 gesetzt
  *
  * \return Integer
- * \retval -1 im Fehlerfall
+ * \retval EXIT_FAILURE im Fehlerfall
  * \retval 0 wenn erfolgreich
  *
  */
@@ -257,13 +256,11 @@ int do_attachSM(int access_mode)
 
 /**
  *
- * \brief
+ * \brief Raeumt die Ressourcen weg
  *
- * \return int
- * \retval EXIT_FAILURE im Fehlerfall
- *
+ * \return void
  */
-int do_cleanup(void)//TODO: Return Wert notwendig? Wird nirgends abgefragt
+void do_cleanup(void)
 {
     int tmp_counter = 0;
     
@@ -272,7 +269,7 @@ int do_cleanup(void)//TODO: Return Wert notwendig? Wird nirgends abgefragt
     if(shmptr != NULL){
         if (shmdt(shmptr) == -1){
             gotanerror("ERROR WHILE HIDING SHARED MEMORY SEGMENT");
-            return EXIT_FAILURE;
+            
         }
     }
     
@@ -280,7 +277,7 @@ int do_cleanup(void)//TODO: Return Wert notwendig? Wird nirgends abgefragt
     if (shmid != -1){
         if (shmctl(shmid, IPC_RMID, NULL) == -1){
             gotanerror("ERROR WHILE REMOVING SHARED MEMORY SEGMENT");
-            return EXIT_FAILURE;
+            
         }
     }
     
@@ -290,7 +287,7 @@ int do_cleanup(void)//TODO: Return Wert notwendig? Wird nirgends abgefragt
         if(semid[tmp_counter] != -1){
             if (semrm(semid[tmp_counter]) == -1) {
                 gotanerror("ERROR WHILE REMOVING SEMAPHOR");
-                return EXIT_FAILURE;
+                
             }
         semid[tmp_counter] = -1;
         }
@@ -298,8 +295,7 @@ int do_cleanup(void)//TODO: Return Wert notwendig? Wird nirgends abgefragt
     }
     shmid = -1;
     shmptr = NULL;
-    
-    return 0;
+
 }
 
 
@@ -354,11 +350,10 @@ int do_writeSM(int data){
 
 /**
  *
- * \brief Liest ein Zeichen in den Shared Memory
- *
+ * \brief Liest ein Zeichen aus dem Shared Memory
  *
  * \return Daten die gelesen wurden
- *
+ * \retval -2 im Fehlerfall
  */
 int do_readSM(void){
     
