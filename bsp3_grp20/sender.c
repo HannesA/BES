@@ -56,8 +56,9 @@ int main(int argc, const char* argv[])
 	
 	/* Prüfe, ob Semaphore 2 existiert bzw. erstelle einen neuen */
 	semid2 = create_semaphore(KEY2, buffer);
+	/*###FB_SG7: Hier solltet ihr semid2 pruefen*/
 	if(semid == -1)
-	{
+	{	
 		fprintf(stderr, "Fehler seminit2()\n");
 		semrm(semid);
 		return EXIT_FAILURE;
@@ -66,7 +67,7 @@ int main(int argc, const char* argv[])
 	/* Erstelle Shared Memory, IPC_EXCL wurde absichtlich nicht angegeben, damit die Reihenfolge des Aufrufs von Sender und Empfänger egal ist */
 	errno = 0;
 	if((shmid = shmget(KEY, (buffer * sizeof(int)), 0660|IPC_CREAT)) == -1)
-	{
+	{//Inspect: Hier genau herschauen, sieht bei uns anders aus
 		if(errno != EEXIST)
 		{
 			fprintf(stderr, "Fehler shmget()\n");
@@ -92,13 +93,13 @@ int main(int argc, const char* argv[])
 	{
 		/* Lese von STDIN */
 		if((ch = fgetc(stdin)) == EOF) break;
-		
+		//Inspect: Fehlerbehandlung vollständig?
 		errno = 0;
 		
 		/* Critical Region */
 		/* Prüfe auf Freigabe des Semaphores und Unterbrechung des Systemcalls */
 		while((P(semid2) == -1 ) && (errno == EINTR))
-		{
+		{//Inspect: Was ist bei anderen Fehlern?
 			errno = 0;			
 		}
 		
@@ -106,14 +107,17 @@ int main(int argc, const char* argv[])
 		shmptr[count] = ch;
 		
 		count = (count + 1)%buffer;
+		//Inspect: Was ist bei anderen Fehlern? Was ist wenn V Interrupted wird?
 		V(semid);
 		/* End of Critical Region */
 	}
-	
+	//Inspect: Genau anschauen ob das hier sinn macht. Speziell wegen fehlender sync
 	/* Senden von EOF */
 	P(semid2);
 	shmptr[count] = ch;
 	V(semid);
+		
+	/*###FB_SG7: Hier sollte man wieder detachen*/	
 		
 	/* Beenden des Programms */
 	printf("\n");
