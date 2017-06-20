@@ -36,6 +36,7 @@
 int main(int argc, const char* argv[])
 {
 	int semid, semid2, shmid, ch, count = 0;
+	/*###FB_SG7: pointer sollte = NULL initialisiert werden*/
 	int *shmptr;
 	long long buffer = 0;	
 
@@ -107,15 +108,20 @@ int main(int argc, const char* argv[])
 		shmptr[count] = ch;
 		
 		count = (count + 1)%buffer;
-		//Inspect: Was ist bei anderen Fehlern? Was ist wenn V Interrupted wird?
+		//Inspect: Was ist bei anderen Fehlern? Was ist wenn V Interrupted wird (DANIEL: Wird in der whileschleife gemacht?)*/
 		V(semid);
 		/* End of Critical Region */
 	}
 	//Inspect: Genau anschauen ob das hier sinn macht. Speziell wegen fehlender sync
+	
+	
 	/* Senden von EOF */
+	/*###FB_SG7:Fehlerbehanung P() und V() fehlt. */
 	P(semid2);
 	shmptr[count] = ch;
+	/*###FB_SG7:Fehlerbehanung P() und V() fehlt. */
 	V(semid);
+	
 		
 	/*###FB_SG7: Hier sollte man wieder detachen*/	
 		

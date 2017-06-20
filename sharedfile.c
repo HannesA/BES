@@ -92,7 +92,7 @@ static unsigned long get_shmall(void)
     }
     fclose(f);
 	
-    return shmall*4;
+    return shmall*(unsigned long)sysconf(_SC_PAGESIZE);
 }
 
 /**

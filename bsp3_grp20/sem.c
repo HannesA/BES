@@ -117,6 +117,7 @@ int create_semaphore(key_t semkey, int init)
 	/* Prüfe, ob bereits ein Semaphore mit dem Key existiert */
 	if((semid = semgrab(semkey)) == -1)
 	{
+		/*###FB_SG7 Hier errno == EEXIST zu prüfen wäre schöner (inkl. errorhandling im Fall errno != EEXIST)*/
 		/* Erstelle neuen Semaphore */
 		semid = seminit(semkey, 0660, init);
 	}
