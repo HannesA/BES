@@ -14,7 +14,9 @@
  */
 
 /* includes */
+/*###FB_SG7: Haette man auch ueber den Header inkludieren koennen wenn sie in allen 3 Files gebraucht wird*/
 #include <stdio.h>
+/*###FB_SG7: Haette man auch ueber den Header inkludieren koennen wenn sie in allen 3 Files gebraucht wird*/
 #include <stdlib.h>
 #include "sem.h"
 
@@ -30,7 +32,7 @@
  * \return buffersize on success, -1 on error
  *
  */
- 
+ //Inspect: Wurde hier etwas vergessen?
 long long check_params(int argc, const char* argv[])
 {
 	int opt;
@@ -40,7 +42,7 @@ long long check_params(int argc, const char* argv[])
 	
 	/* Überprüfung, ob kein bzw. zu viele Argumente eingegeben wurden */
 	if(argc < 2 || argc > 3)
-	{
+	{	/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 		fprintf(stderr, "usage: sender -m <ring buffer size>\n");
 		return -1;
 	}
@@ -56,8 +58,9 @@ long long check_params(int argc, const char* argv[])
 			
 			/* Prüfe, ob eingegebener Bufferwert > 0 ist */
 			if(strncmp(optarg, "-", 1) == 0 || tmpbuffer == 0)
-			{
+			{	/*###FB_SG7: %lli steht fuer ein signed long long, tmpbuffer ist aber ein unsigned --> %llu & Fehlermeldungen sollten den Programmnamen enthalten*/
 				fprintf(stderr, "%s: ring buffer size must be > 0 and not %lli\n", argv[0], tmpbuffer);
+				/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 				fprintf(stderr, "usage: sender -m <ring buffer size>\n");
 				return -1;
 			}
@@ -65,15 +68,16 @@ long long check_params(int argc, const char* argv[])
 			{
 				/* Prüfe, ob ein Bufferwert angegeben wurde */
 				if(*endptr != '\0' || argv[optind] != '\0')
-				{
+				{	/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 					fprintf(stderr, "usage: sender -m <ring buffer size>\n");
 					return -1;
 				}
 				
 				/* Prüfe, ob eingegebener Bufferwert zu groß ist */
 				if(tmpbuffer > LLONG_MAX || (tmpbuffer * sizeof(int)) > SIZE_MAX)
-				{
+				{	/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 					fprintf(stderr, "%s: ring buffer size too big\n", argv[0]);
+					/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 					fprintf(stderr, "usage: sender -m <ring buffer size>\n");
 					return -1;
 				}
@@ -86,7 +90,7 @@ long long check_params(int argc, const char* argv[])
 		
 		/* Argument != -m wurde angegeben */
 		else
-		{
+		{	/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 			fprintf(stderr, "usage: sender -m <ring buffer size>\n");
 			return -1;
 		}
@@ -113,12 +117,13 @@ long long check_params(int argc, const char* argv[])
 int create_semaphore(key_t semkey, int init)
 {
 	int semid;
-	
+	//Inspect: Reihenfolge pruefen, ist anders als bei uns und Galla hatte auch gesagt war unser Weg richtig ist
 	/* Prüfe, ob bereits ein Semaphore mit dem Key existiert */
 	if((semid = semgrab(semkey)) == -1)
 	{
-		/*###FB_SG7 Hier errno == EEXIST zu prüfen wäre schöner (inkl. errorhandling im Fall errno != EEXIST)*/
+		
 		/* Erstelle neuen Semaphore */
+		/*###FB_SG7 Hier errno == EEXIST zu prüfen wäre schöner (inkl. errorhandling im Fall errno != EEXIST)*/
 		semid = seminit(semkey, 0660, init);
 	}
 	

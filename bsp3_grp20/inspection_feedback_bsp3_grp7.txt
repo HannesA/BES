@@ -1,0 +1,7 @@
+
+
+/*###FB_SG7: Feedback File Punkt 1*/
+Punkt 1:
+semrm, shmctl, shmdt liefern alle einen Return Code zur Anzeige etwaiger Fehler. Es macht zwar nicht viel Sinn sie dann nochmals aufzurufen aber dem User ist mit einer Fehlermeldung sicher geholfen.
+Funktionen die einen Wert retour liefern, ich diesen aber bewusst "ignoriere" sollten mit (void) gecastet werden.
+

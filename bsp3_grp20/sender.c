@@ -14,7 +14,9 @@
  */
 
 /* includes */
+/*###FB_SG7: Haette man auch ueber den Header inkludieren koennen wenn sie in allen 3 Files gebraucht wird*/
 #include <stdio.h>
+/*###FB_SG7: Haette man auch ueber den Header inkludieren koennen wenn sie in allen 3 Files gebraucht wird*/
 #include <stdlib.h>
 #include "sem.h"
 
@@ -50,7 +52,7 @@ int main(int argc, const char* argv[])
 	/* Prüfe, ob Semaphore 1 existiert bzw. erstelle einen neuen */
 	semid = create_semaphore(KEY, 0);
 	if(semid == -1)
-	{
+	{	/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 		fprintf(stderr, "Fehler seminit()\n");
 		return EXIT_FAILURE;
 	}
@@ -59,8 +61,9 @@ int main(int argc, const char* argv[])
 	semid2 = create_semaphore(KEY2, buffer);
 	/*###FB_SG7: Hier solltet ihr semid2 pruefen*/
 	if(semid == -1)
-	{	
+	{	/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 		fprintf(stderr, "Fehler seminit2()\n");
+		/*###FB_SG7: Feedback File Punkt 1*/
 		semrm(semid);
 		return EXIT_FAILURE;
 	}
@@ -70,9 +73,11 @@ int main(int argc, const char* argv[])
 	if((shmid = shmget(KEY, (buffer * sizeof(int)), 0660|IPC_CREAT)) == -1)
 	{//Inspect: Hier genau herschauen, sieht bei uns anders aus
 		if(errno != EEXIST)
-		{
+		{	/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 			fprintf(stderr, "Fehler shmget()\n");
+			/*###FB_SG7: Feedback File Punkt 1*/
 			semrm(semid);
+			/*###FB_SG7: Feedback File Punkt 1*/
 			semrm(semid2);
 			return EXIT_FAILURE;
 		}
@@ -81,10 +86,13 @@ int main(int argc, const char* argv[])
 	/* Blende Shared Memory in Adressbereich des Prozesses ein */
 	shmptr = shmat(shmid, NULL, 0);
 	if(shmptr == (int *) -1)
-	{
+	{	/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 		fprintf(stderr, "Fehler shmat()\n");
+		/*###FB_SG7: Feedback File Punkt 1*/
 		semrm(semid);
+		/*###FB_SG7: Feedback File Punkt 1*/
 		semrm(semid2);
+		/*###FB_SG7: Feedback File Punkt 1*/
 		shmctl(shmid, IPC_RMID, NULL);
 		return EXIT_FAILURE;
 	}
@@ -93,14 +101,16 @@ int main(int argc, const char* argv[])
 	while(1)
 	{
 		/* Lese von STDIN */
+		/*###FB_SG7: fgetc kann auch im Fehlerfall EOF liefern. Das sollte man abfragen*/
 		if((ch = fgetc(stdin)) == EOF) break;
 		//Inspect: Fehlerbehandlung vollständig?
 		errno = 0;
 		
 		/* Critical Region */
 		/* Prüfe auf Freigabe des Semaphores und Unterbrechung des Systemcalls */
+		/*###FB_SG7: Was wenn ein anderer Fehler auftritt?*/
 		while((P(semid2) == -1 ) && (errno == EINTR))
-		{//Inspect: Was ist bei anderen Fehlern?
+		{
 			errno = 0;			
 		}
 		
@@ -108,7 +118,8 @@ int main(int argc, const char* argv[])
 		shmptr[count] = ch;
 		
 		count = (count + 1)%buffer;
-		//Inspect: Was ist bei anderen Fehlern? Was ist wenn V Interrupted wird (DANIEL: Wird in der whileschleife gemacht?)*/
+		
+		/*###FB_SG7: Was wenn hier ein Fehler auftritt oder zumindest ein Interrupt?*/
 		V(semid);
 		/* End of Critical Region */
 	}
@@ -116,16 +127,17 @@ int main(int argc, const char* argv[])
 	
 	
 	/* Senden von EOF */
-	/*###FB_SG7:Fehlerbehanung P() und V() fehlt. */
+	/*###FB_SG7:Fehlerbehandlung P() fehlt. */
 	P(semid2);
 	shmptr[count] = ch;
-	/*###FB_SG7:Fehlerbehanung P() und V() fehlt. */
+	/*###FB_SG7:Fehlerbehandlung V() fehlt. */
 	V(semid);
 	
 		
 	/*###FB_SG7: Hier sollte man wieder detachen*/	
 		
 	/* Beenden des Programms */
+	/*###FB_SG7:F Wozu das printf?*/
 	printf("\n");
 	return EXIT_SUCCESS;
 }
