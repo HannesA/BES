@@ -32,7 +32,7 @@
  * \return buffersize on success, -1 on error
  *
  */
- //Inspect: Wurde hier etwas vergessen?
+
 long long check_params(int argc, const char* argv[])
 {
 	int opt;
@@ -74,6 +74,7 @@ long long check_params(int argc, const char* argv[])
 				}
 				
 				/* Prüfe, ob eingegebener Bufferwert zu groß ist */
+				/*###FB_SG7: Hier sollte == LLONG_MAX abgefragt werden --> Return value strtol() im Falle eines Overflows*/
 				if(tmpbuffer > LLONG_MAX || (tmpbuffer * sizeof(int)) > SIZE_MAX)
 				{	/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 					fprintf(stderr, "%s: ring buffer size too big\n", argv[0]);
@@ -117,8 +118,9 @@ long long check_params(int argc, const char* argv[])
 int create_semaphore(key_t semkey, int init)
 {
 	int semid;
-	//Inspect: Reihenfolge pruefen, ist anders als bei uns und Galla hatte auch gesagt war unser Weg richtig ist
+	
 	/* Prüfe, ob bereits ein Semaphore mit dem Key existiert */
+	/*###FB_SG7: Reihenfolge wuerden wir umdrehen. Was wenn beide nahezu zeitgleich aufgerufen werden und zunaechst keiner einen Semaphor findet und im Anschluss beide einen anlegen wollen?*/
 	if((semid = semgrab(semkey)) == -1)
 	{
 		

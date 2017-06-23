@@ -1,7 +1,14 @@
+Allgemein:
 
+-Code besteht alle Tests des Testscripts.
+-Einige Dinge hätte man in sem.c & sem.h integrieren können um doppelten Code zu sparen und Fehlerquellen zu zentralisieren und somit zu minimieren. Dinge die man oft wiederholt braucht sind ideal um in eigene Funktionen ausgelagert zu werden.
+-Schoen: Allgemein uebersichtlicher und nachvollziehbarer Code
+-Schoen: Ihr kommt ohne globale Variablen aus
+
+Längere Anmerkungen zum Code:
 
 /*###FB_SG7: Feedback File Punkt 1*/
 Punkt 1:
 semrm, shmctl, shmdt liefern alle einen Return Code zur Anzeige etwaiger Fehler. Es macht zwar nicht viel Sinn sie dann nochmals aufzurufen aber dem User ist mit einer Fehlermeldung sicher geholfen.
-Funktionen die einen Wert retour liefern, ich diesen aber bewusst "ignoriere" sollten mit (void) gecastet werden.
+& Funktionen die einen Wert retour liefern, ich diesen aber bewusst "ignoriere" sollten mit (void) gecastet werden. 
 

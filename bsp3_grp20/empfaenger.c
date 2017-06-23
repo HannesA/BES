@@ -92,7 +92,7 @@ int main(int argc, const char* argv[])
 		semrm(semid);
 		/*###FB_SG7: Feedback File Punkt 1*/
 		semrm(semid2);
-		/*###FB_SG7: Feedback File Punkt 1*/
+		/*###FB_SG7: Feedback File Punkt 1 & Hiervor sollte noch ein Detach stehen*/
 		shmctl(shmid, IPC_RMID, NULL);
 		return EXIT_FAILURE;
 	}

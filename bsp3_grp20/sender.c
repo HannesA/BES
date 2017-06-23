@@ -71,7 +71,7 @@ int main(int argc, const char* argv[])
 	/* Erstelle Shared Memory, IPC_EXCL wurde absichtlich nicht angegeben, damit die Reihenfolge des Aufrufs von Sender und Empfänger egal ist */
 	errno = 0;
 	if((shmid = shmget(KEY, (buffer * sizeof(int)), 0660|IPC_CREAT)) == -1)
-	{//Inspect: Hier genau herschauen, sieht bei uns anders aus
+	{
 		if(errno != EEXIST)
 		{	/*###FB_SG7: Fehlermeldungen sollten den Programmnamen enthalten*/
 			fprintf(stderr, "Fehler shmget()\n");
@@ -92,7 +92,7 @@ int main(int argc, const char* argv[])
 		semrm(semid);
 		/*###FB_SG7: Feedback File Punkt 1*/
 		semrm(semid2);
-		/*###FB_SG7: Feedback File Punkt 1*/
+		/*###FB_SG7: Feedback File Punkt 1 & Hiervor sollte noch ein Detach stehen*/
 		shmctl(shmid, IPC_RMID, NULL);
 		return EXIT_FAILURE;
 	}
@@ -103,12 +103,12 @@ int main(int argc, const char* argv[])
 		/* Lese von STDIN */
 		/*###FB_SG7: fgetc kann auch im Fehlerfall EOF liefern. Das sollte man abfragen*/
 		if((ch = fgetc(stdin)) == EOF) break;
-		//Inspect: Fehlerbehandlung vollständig?
+		
 		errno = 0;
 		
 		/* Critical Region */
 		/* Prüfe auf Freigabe des Semaphores und Unterbrechung des Systemcalls */
-		/*###FB_SG7: Was wenn ein anderer Fehler auftritt?*/
+		/*###FB_SG7: Was wenn ein anderer Fehler als ein Interrupt auftritt?*/
 		while((P(semid2) == -1 ) && (errno == EINTR))
 		{
 			errno = 0;			
@@ -123,14 +123,14 @@ int main(int argc, const char* argv[])
 		V(semid);
 		/* End of Critical Region */
 	}
-	//Inspect: Genau anschauen ob das hier sinn macht. Speziell wegen fehlender sync
+
 	
 	
 	/* Senden von EOF */
-	/*###FB_SG7:Fehlerbehandlung P() fehlt. */
+	/*###FB_SG7:Fehlerbehandlung P() & Synchronisation fehlt. & Warum nicht in der Schleife? Das EOF kann man auch so senden und danach breaken*/
 	P(semid2);
 	shmptr[count] = ch;
-	/*###FB_SG7:Fehlerbehandlung V() fehlt. */
+	/*###FB_SG7:Fehlerbehandlung V() & Synchronisation fehlt. & Warum nicht in der Schleife? Das EOF kann man auch so senden und danach breaken */
 	V(semid);
 	
 		
